@@ -19,7 +19,7 @@ export function Stats({ stats }: { stats: MyStats }) {
   ];
   return (
     <section className={card}>
-      <span className={label}>Моя статистика</span>
+      <span className={label}>Статистика</span>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
         {items.map((it) => (
           <div key={it.title}>

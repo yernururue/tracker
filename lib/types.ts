@@ -1,7 +1,6 @@
 export type Profile = {
   id: string;
   display_name: string;
-  daily_goal_minutes: number;
   created_at: string;
 };
 

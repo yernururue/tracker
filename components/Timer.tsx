@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatClock } from "@/lib/time";
 import type { ActiveTimer, TimerRpcResult } from "@/lib/types";
@@ -11,6 +11,7 @@ const EIGHT_HOURS = 8 * 60 * 60 * 1000;
 const MIN_REPORT = 10;
 
 type Mode = "timer" | "report" | "confirm-discard";
+type Rpc = "start_timer" | "pause_timer" | "resume_timer" | "discard_timer";
 
 function elapsedMs(timer: ActiveTimer | null, nowMs: number): number {
   if (!timer) return 0;
@@ -18,6 +19,11 @@ function elapsedMs(timer: ActiveTimer | null, nowMs: number): number {
   return Number(timer.accumulated_ms) + running;
 }
 
+/**
+ * The UI updates instantly (optimistic) and the change is synced to the
+ * database in the background, one request at a time, in click order.
+ * The database (active_timers) stays the source of truth across devices.
+ */
 export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer | null; serverNow: string }) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -27,95 +33,137 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
   const [now, setNow] = useState(() => Date.now() + offset);
   const [mode, setMode] = useState<Mode>("timer");
   const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const inFlight = useRef(0);
 
   const [minutes, setMinutes] = useState("");
   const [report, setReport] = useState("");
 
-  // Pick up changes made on another device after router.refresh().
+  // Pick up changes from other devices on refresh, unless our own writes are in flight.
   const [prevServerNow, setPrevServerNow] = useState(serverNow);
   if (serverNow !== prevServerNow) {
     setPrevServerNow(serverNow);
-    setTimer(initialTimer);
+    if (pending === 0 && !saving) setTimer(initialTimer);
   }
 
   const running = Boolean(timer?.running_since);
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => setNow(Date.now() + offset), 1000);
+    const tick = () => setNow(Date.now() + offset);
+    const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [running, offset]);
 
-  const elapsed = elapsedMs(timer, now);
+  const elapsed = elapsedMs(timer, running ? now : 0);
 
   useEffect(() => {
-    const base = "Учёба";
-    document.title = running ? `${formatClock(elapsed)} · ${base}` : base;
+    document.title = running ? `${formatClock(elapsed)} · Учёба` : "Учёба";
   }, [running, elapsed]);
 
-  async function call(fn: "start_timer" | "pause_timer" | "resume_timer" | "discard_timer") {
-    const { data, error } = await supabase.rpc(fn);
-    if (error) throw error;
-    const res = data as TimerRpcResult;
-    setOffset(Date.parse(res.now) - Date.now());
-    setTimer(res.timer);
-    return res;
-  }
+  const nowIso = () => new Date(Date.now() + offset).toISOString();
 
-  function run(task: () => Promise<void>) {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await task();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Что-то пошло не так. Попробуй ещё раз.");
+  function sync(fn: Rpc) {
+    setPending((n) => n + 1);
+    inFlight.current += 1;
+    queue.current = queue.current.then(async () => {
+      const { data, error } = await supabase.rpc(fn);
+      inFlight.current -= 1;
+      setPending((n) => n - 1);
+      if (error) {
+        setError("Не удалось синхронизировать. Обновляю состояние…");
+        router.refresh();
+        return;
       }
+      const res = data as TimerRpcResult;
+      setOffset(Date.parse(res.now) - Date.now());
+      // Once the queue is drained, adopt the database state (e.g. a timer started elsewhere).
+      if (inFlight.current === 0) setTimer((cur) => (cur === null && fn !== "discard_timer" ? cur : res.timer));
     });
   }
 
-  const onStart = () => run(async () => { await call("start_timer"); router.refresh(); });
-  const onPause = () => run(async () => { await call("pause_timer"); router.refresh(); });
-  const onResume = () => run(async () => { await call("resume_timer"); router.refresh(); });
+  function start() {
+    setError(null);
+    const t = nowIso();
+    setNow(Date.parse(t));
+    setTimer({ user_id: "", started_at: t, accumulated_ms: 0, running_since: t });
+    sync("start_timer");
+  }
 
-  const onFinish = () =>
-    run(async () => {
-      const res = await call("pause_timer");
-      const ms = elapsedMs(res.timer, Date.parse(res.now));
-      setMinutes(String(Math.min(960, Math.max(1, Math.round(ms / 60000)))));
-      setMode("report");
-      router.refresh();
-    });
+  function pauseLocal(): ActiveTimer | null {
+    if (!timer?.running_since) return timer;
+    const nowMs = Date.now() + offset;
+    const paused = { ...timer, accumulated_ms: elapsedMs(timer, nowMs), running_since: null };
+    setTimer(paused);
+    return paused;
+  }
 
-  const onDiscard = () =>
-    run(async () => {
-      await call("discard_timer");
-      setMode("timer");
-      setReport("");
-      router.refresh();
-    });
+  function pause() {
+    setError(null);
+    pauseLocal();
+    sync("pause_timer");
+  }
+
+  function resume() {
+    if (!timer) return;
+    setError(null);
+    const t = nowIso();
+    setNow(Date.parse(t));
+    setTimer({ ...timer, running_since: t });
+    sync("resume_timer");
+  }
+
+  function finish() {
+    setError(null);
+    const wasRunning = running;
+    const paused = pauseLocal();
+    if (wasRunning) sync("pause_timer");
+    const ms = elapsedMs(paused, 0);
+    setMinutes(String(Math.min(960, Math.max(1, Math.round(ms / 60000)))));
+    setMode("report");
+  }
+
+  function discard() {
+    setError(null);
+    setTimer(null);
+    setMode("timer");
+    setReport("");
+    sync("discard_timer");
+  }
 
   const minutesNum = Number(minutes);
   const minutesValid = Number.isInteger(minutesNum) && minutesNum >= 1 && minutesNum <= 960;
   const reportValid = report.trim().length >= MIN_REPORT;
 
-  const onSave = (e: React.FormEvent) => {
+  function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!minutesValid || !reportValid) return;
-    run(async () => {
-      const { error } = await supabase.rpc("finish_session", {
-        p_minutes: minutesNum,
-        p_report: report.trim(),
-      });
-      if (error) throw error;
-      setTimer(null);
+    if (!minutesValid || !reportValid || saving) return;
+    setError(null);
+    setSaving(true);
+    const text = report.trim();
+    const prevTimer = timer;
+    // Optimistic: clear right away, restore the form if saving fails.
+    setTimer(null);
+    setMode("timer");
+    inFlight.current += 1;
+    queue.current = queue.current.then(async () => {
+      const { error } = await supabase.rpc("finish_session", { p_minutes: minutesNum, p_report: text });
+      inFlight.current -= 1;
+      setSaving(false);
+      if (error) {
+        setTimer(prevTimer);
+        setMode("report");
+        setError(`Не удалось сохранить: ${error.message}`);
+        return;
+      }
       setReport("");
-      setMode("timer");
       router.refresh();
     });
-  };
+  }
 
   const state = !timer ? "idle" : running ? "running" : "paused";
-  const stateLabel = { idle: "Не запущен", running: "Идёт", paused: "Пауза" }[state];
+  const stateLabel = { idle: "Готов", running: "Идёт", paused: "Пауза" }[state];
 
   return (
     <section className={card}>
@@ -123,21 +171,20 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
         <span className={label}>Таймер</span>
         <span className="flex items-center gap-2 text-sm text-muted">
           {state === "running" && <span className="size-2 rounded-full bg-live" aria-hidden />}
-          {mode === "report" ? "Отчёт" : stateLabel}
+          {saving ? "Сохраняю…" : mode === "report" ? "Отчёт" : stateLabel}
         </span>
       </div>
 
       <p
-        className={`mt-6 text-center font-mono text-5xl font-medium tabular-nums tracking-tight sm:text-7xl ${
-          state === "idle" ? "text-muted" : ""
+        className={`mt-8 text-center font-mono text-5xl font-medium tabular-nums tracking-tight sm:text-6xl ${
+          state === "idle" ? "text-muted/60" : ""
         }`}
-        aria-live="off"
       >
         {formatClock(elapsed)}
       </p>
 
       {mode === "report" ? (
-        <form onSubmit={onSave} className="mt-8 flex flex-col gap-5">
+        <form onSubmit={save} className="mt-8 flex flex-col gap-5">
           {elapsed > EIGHT_HOURS && (
             <p className="rounded-xl border border-danger/30 px-4 py-3 text-sm text-danger">
               Похоже, таймер забыли выключить — поправь минуты
@@ -156,54 +203,55 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
               onChange={(e) => setMinutes(e.target.value)}
               className={`${input} font-mono`}
             />
-            {!minutesValid && minutes !== "" && (
-              <span className="text-sm text-danger">От 1 до 960 минут</span>
-            )}
+            {!minutesValid && minutes !== "" && <span className="text-sm text-danger">От 1 до 960 минут</span>}
           </label>
           <label className="flex flex-col gap-2">
             <span className={label}>Что сделал</span>
             <textarea
               required
               rows={5}
+              autoFocus
               value={report}
               onChange={(e) => setReport(e.target.value)}
               placeholder="Что конкретно сделал? Задачи, ссылки, что не получилось"
               className={`${input} resize-y leading-relaxed`}
             />
-            <span className={`text-xs ${reportValid ? "text-muted" : "text-muted/80"}`}>
-              {reportValid ? " " : `Минимум ${MIN_REPORT} символов, сейчас ${report.trim().length}`}
-            </span>
+            {!reportValid && (
+              <span className="text-xs text-muted">
+                Минимум {MIN_REPORT} символов, сейчас {report.trim().length}
+              </span>
+            )}
           </label>
           {error && <p className="text-sm text-danger">{error}</p>}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button type="submit" disabled={pending || !minutesValid || !reportValid} className={btnPrimary}>
-              {pending ? "Сохраняю…" : "Сохранить"}
+            <button type="submit" disabled={!minutesValid || !reportValid} className={`${btnPrimary} sm:flex-1`}>
+              Сохранить
             </button>
-            <button type="button" disabled={pending} onClick={() => setMode("timer")} className={btnSecondary}>
-              Вернуться к таймеру
+            <button type="button" onClick={() => setMode("timer")} className={`${btnSecondary} sm:flex-1`}>
+              Назад
             </button>
           </div>
         </form>
       ) : (
         <>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <div className="mt-8 flex gap-3">
             {state === "idle" && (
-              <button onClick={onStart} disabled={pending} className={`${btnPrimary} sm:min-w-44`}>
+              <button onClick={start} className={`${btnPrimary} flex-1`}>
                 Начать
               </button>
             )}
             {state === "running" && (
-              <button onClick={onPause} disabled={pending} className={`${btnSecondary} sm:min-w-40`}>
+              <button onClick={pause} className={`${btnSecondary} flex-1`}>
                 Пауза
               </button>
             )}
             {state === "paused" && (
-              <button onClick={onResume} disabled={pending} className={`${btnSecondary} sm:min-w-40`}>
+              <button onClick={resume} className={`${btnSecondary} flex-1`}>
                 Продолжить
               </button>
             )}
             {state !== "idle" && (
-              <button onClick={onFinish} disabled={pending} className={`${btnPrimary} sm:min-w-40`}>
+              <button onClick={finish} className={`${btnPrimary} flex-1`}>
                 Завершить
               </button>
             )}
@@ -212,25 +260,22 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
           {error && <p className="mt-4 text-center text-sm text-danger">{error}</p>}
 
           {state !== "idle" && (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-4 flex justify-center">
               {mode === "confirm-discard" ? (
-                <div className="flex flex-col items-center gap-3 text-center">
-                  <p className="text-sm text-muted">Сбросить сессию? Время не сохранится.</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={onDiscard}
-                      disabled={pending}
-                      className="rounded-lg border border-danger/40 px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
-                    >
-                      Да, сбросить
-                    </button>
-                    <button onClick={() => setMode("timer")} disabled={pending} className={btnGhost}>
-                      Отмена
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted">Время не сохранится.</span>
+                  <button
+                    onClick={discard}
+                    className="rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
+                  >
+                    Сбросить
+                  </button>
+                  <button onClick={() => setMode("timer")} className={btnGhost}>
+                    Отмена
+                  </button>
                 </div>
               ) : (
-                <button onClick={() => setMode("confirm-discard")} disabled={pending} className={btnGhost}>
+                <button onClick={() => setMode("confirm-discard")} className={btnGhost}>
                   Сбросить сессию
                 </button>
               )}

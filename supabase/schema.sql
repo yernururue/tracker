@@ -6,7 +6,6 @@
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   display_name text not null check (char_length(btrim(display_name)) between 1 and 40),
-  daily_goal_minutes integer not null default 120 check (daily_goal_minutes between 1 and 960),
   created_at timestamptz not null default now()
 );
 
@@ -40,6 +39,9 @@ with (security_invoker = true) as
 
 grant select on public.user_totals to authenticated;
 revoke select on public.user_totals from anon;
+
+-- Daily goal was removed from the app.
+alter table public.profiles drop column if exists daily_goal_minutes;
 
 -- ============ Row Level Security ============
 -- Everyone signed in can read everything; each user writes only their own rows.
