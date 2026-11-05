@@ -10,6 +10,7 @@ import { dayKey, dayStartUtc } from "@/lib/time";
 import type { Profile } from "@/lib/types";
 import { signOut } from "../../profile-actions";
 import { NameForm } from "./name-form";
+import { PasswordForm } from "./password-form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -61,6 +62,8 @@ export default async function ProfilePage({ params }: PageProps<"/u/[id]">) {
           <section className={`${card} flex flex-col gap-3`}>
             <span className={label}>Name</span>
             <NameForm name={profile.display_name} />
+            <span className={`${label} mt-3`}>Password</span>
+            <PasswordForm email={user.email ?? ""} />
             <p className="truncate text-sm text-muted">{user.email}</p>
           </section>
         )}

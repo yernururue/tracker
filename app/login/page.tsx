@@ -16,11 +16,16 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className={`${card} sm:p-8`}>
         <Logo size={40} />
         <h1 className="mt-5 text-2xl font-semibold tracking-tight">Study</h1>
-        <p className="mt-1.5 text-muted">Sign in with a link sent to your email. No password needed.</p>
-        {message && (
-          <p className="mt-6 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">{message}</p>
-        )}
-        <LoginForm />
+        <LoginForm
+          initialMode={error === "link" ? "link" : "password"}
+          notice={
+            message && (
+              <p className="mt-6 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">
+                {message}
+              </p>
+            )
+          }
+        />
       </div>
     </main>
   );

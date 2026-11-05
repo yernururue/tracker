@@ -8,7 +8,7 @@
 
 1. Создай проект на [supabase.com](https://supabase.com).
 2. **SQL Editor → New query**: вставь содержимое [`supabase/schema.sql`](supabase/schema.sql) и нажми Run. Скрипт можно запускать повторно: после обновлений просто прогони его ещё раз.
-3. **Authentication → Sign In / Providers → Email**: email-провайдер включён по умолчанию. Пароли не используются, вход только по magic link.
+3. **Authentication → Sign In / Providers → Email**: email-провайдер включён по умолчанию. Первый вход идёт по magic link, при онбординге человек задаёт пароль, дальше входит по email и паролю. Забыл пароль: снова вход по ссылке и новый пароль в профиле.
 4. **Authentication → URL Configuration**:
    - **Site URL**: `https://<твой-домен>.vercel.app`
    - **Redirect URLs**: добавь `https://<твой-домен>.vercel.app/auth/confirm` и для локальной разработки `http://localhost:3000/auth/confirm`
@@ -23,7 +23,7 @@
 
 ### Allowlist и закрытие регистрации
 
-Приложение пускает только email из `ALLOWED_EMAILS`. Проверка стоит перед отправкой ссылки, после перехода по ней и на каждый запрос. Но anon key публичный, и через API Supabase в обход сайта зарегистрироваться технически можно. Поэтому **после того как все друзья вошли хотя бы раз**, выключи **Authentication → Sign In / Providers → Allow new users to sign up**. Существующие пользователи продолжат входить по ссылке.
+Приложение пускает только email из `ALLOWED_EMAILS`. Проверка стоит перед отправкой ссылки, после перехода по ней и на каждый запрос. Но anon key публичный, и через API Supabase в обход сайта зарегистрироваться технически можно. Поэтому **после того как все друзья вошли хотя бы раз**, выключи **Authentication → Sign In / Providers → Allow new users to sign up**. Существующие пользователи продолжат входить по паролю или по ссылке.
 
 Бесплатный SMTP Supabase отправляет всего несколько писем в час. Для 2–3 человек этого хватает, но если письма не приходят, подожди или подключи свой SMTP в **Authentication → Emails → SMTP Settings**.
 

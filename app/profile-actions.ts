@@ -11,15 +11,33 @@ function parseName(formData: FormData): string | null {
   return name.length >= 1 && name.length <= 40 ? name : null;
 }
 
+const PASSWORD_RULE = "Password must be 8 to 72 characters.";
+
+function parsePassword(formData: FormData): string | null {
+  const password = String(formData.get("password") ?? "");
+  return password.length >= 8 && password.length <= 72 ? password : null;
+}
+
+/** Sets the signed-in user's password. Re-sending the current one counts as success. */
+async function setPassword(supabase: Awaited<ReturnType<typeof createClient>>, password: string) {
+  const { error } = await supabase.auth.updateUser({ password });
+  return error && error.code !== "same_password" ? `Couldn’t set the password: ${error.message}` : null;
+}
+
 export async function createProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = parseName(formData);
   if (!name) return { error: "Name must be 1 to 40 characters." };
+  const password = parsePassword(formData);
+  if (!password) return { error: PASSWORD_RULE };
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const pwError = await setPassword(supabase, password);
+  if (pwError) return { error: pwError };
 
   const { error } = await supabase
     .from("profiles")
@@ -47,6 +65,20 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
 
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+export async function updatePassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const password = parsePassword(formData);
+  if (!password) return { error: PASSWORD_RULE };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const error = await setPassword(supabase, password);
+  return error ? { error } : { ok: true };
 }
 
 export async function signOut() {
