@@ -11,7 +11,7 @@ const STATUSES: GoalStatus[] = ["pending", "done", "partial", "missed"];
 const STATUS_ACTIVE: Record<GoalStatus, string> = {
   pending: "bg-surface text-ink",
   done: "bg-live-soft text-live-strong",
-  partial: "bg-accent-soft text-accent-hover",
+  partial: "bg-warn-soft text-warn",
   missed: "bg-[#fbe3df] text-[#9b3a2e]",
 };
 

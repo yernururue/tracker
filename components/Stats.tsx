@@ -24,9 +24,9 @@ export function Stats({ stats }: { stats: MyStats }) {
         {items.map((it) => (
           <div key={it.title}>
             <dt className="text-sm text-muted">{it.title}</dt>
-            <dd className="mt-1 font-mono text-xl tabular-nums">
+            <dd className="mt-1 text-2xl font-semibold tracking-tight">
               {it.value}
-              <span className="ml-1 font-sans text-sm text-muted">{it.unit}</span>
+              <span className="ml-1 text-sm font-normal text-muted">{it.unit}</span>
             </dd>
           </div>
         ))}

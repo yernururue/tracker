@@ -1,14 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Onest } from "next/font/google";
+import { Onest } from "next/font/google";
 import "./globals.css";
 
 const onest = Onest({
   variable: "--font-onest",
-  subsets: ["latin", "cyrillic"],
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
   subsets: ["latin", "cyrillic"],
 });
 
@@ -26,7 +21,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className={`${onest.variable} ${jetbrains.variable} antialiased`}>
+    <html lang="ru" className={`${onest.variable} antialiased`}>
       <body className="min-h-dvh bg-bg font-sans text-ink">{children}</body>
     </html>
   );

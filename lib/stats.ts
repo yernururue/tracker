@@ -38,6 +38,10 @@ export function computeStats(byDay: Map<string, number>, todayKey: string): MySt
   return { today: byDay.get(todayKey) ?? 0, week, streak, total };
 }
 
+/** Norm behind the progress rings: 2 hours a day, every day. */
+export const DAY_TARGET_MIN = 120;
+export const WEEK_TARGET_MIN = DAY_TARGET_MIN * 7;
+
 export const HEATMAP_WEEKS = 16;
 
 /** Levels: 0 = none, 1 = <30m, 2 = <60m, 3 = <2h, 4 = 2h+ */

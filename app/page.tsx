@@ -1,11 +1,10 @@
 import { AutoRefresh } from "@/components/AutoRefresh";
-import { FriendCard, type FriendCardData } from "@/components/FriendCard";
+import { type FriendCardData } from "@/components/FriendCard";
+import { FriendsPanel } from "@/components/FriendsPanel";
 import { Header } from "@/components/Header";
 import { InstructionsProvider } from "@/components/Instructions";
 import { Timer } from "@/components/Timer";
 import { WeeklyGoal } from "@/components/WeeklyGoal";
-import { label } from "@/components/ui";
-import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { demoFriends } from "@/lib/demo";
 import { getInstructions } from "@/lib/instructions";
@@ -65,7 +64,6 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
       b.weekMin - a.weekMin ||
       a.name.localeCompare(b.name, "ru"),
   );
-  const maxWeek = Math.max(0, ...friends.map((f) => f.weekMin));
 
   const loadError = [profilesRes, timersRes, weekRes, recentRes, goalsRes].find((r) => r.error)?.error;
 
@@ -87,25 +85,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
             <WeeklyGoal goal={myGoal} userId={user.id} weekStart={weekKey} />
           </div>
 
-          <section>
-            <div className="mb-3 flex items-baseline justify-between px-1">
-              <span className={label}>Друзья за неделю</span>
-              <Link href={demo ? "/" : "/?demo"} className="rounded-full px-2 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-ink">
-                {demo ? "скрыть демо" : "демо"}
-              </Link>
-            </div>
-            <div className="flex flex-col gap-3">
-              {friends.map((f) => (
-                <FriendCard
-                  key={f.id}
-                  f={f}
-                  maxWeek={maxWeek}
-                  me={f.id === user.id}
-                  href={f.id.startsWith("demo-") ? undefined : `/u/${f.id}`}
-                />
-              ))}
-            </div>
-          </section>
+          <FriendsPanel friends={friends} meId={user.id} demo={demo} />
         </div>
       </main>
     </InstructionsProvider>

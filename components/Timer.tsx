@@ -7,6 +7,7 @@ import { formatClock } from "@/lib/time";
 import type { ActiveTimer, TimerRpcResult } from "@/lib/types";
 import { SECTION_REPORT, useInstructions } from "./Instructions";
 import { Modal } from "./Modal";
+import { RollingText } from "./Progress";
 import { btnGhost, btnPrimary, btnSecondary, card, input, label } from "./ui";
 
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
@@ -218,7 +219,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
   const badge = {
     idle: "bg-surface-2 text-muted",
     running: "bg-live-soft text-live-strong",
-    paused: "bg-accent-soft text-accent-hover",
+    paused: "bg-warn-soft text-warn",
   }[state];
 
   return (
@@ -232,11 +233,11 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       </div>
 
       <p
-        className={`mt-7 text-center font-mono text-[3.25rem] font-medium leading-none tabular-nums tracking-tight sm:text-7xl ${
+        className={`mt-7 text-center text-6xl font-semibold leading-none tabular-nums tracking-tight sm:text-7xl ${
           state === "idle" ? "text-ink/25" : ""
         }`}
       >
-        {formatClock(elapsed)}
+        <RollingText text={formatClock(elapsed)} />
       </p>
 
       <div className="mt-7 flex gap-3">
@@ -305,7 +306,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
               required
               value={minutes}
               onChange={(e) => setMinutes(e.target.value)}
-              className={`${input} max-w-36 font-mono`}
+              className={`${input} max-w-36 tabular-nums`}
             />
             {!minutesValid && minutes !== "" && <span className="text-sm text-danger">От 1 до 960 минут</span>}
           </label>

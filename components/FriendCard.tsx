@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { DAY_TARGET_MIN, WEEK_TARGET_MIN } from "@/lib/stats";
 import { formatClock, formatHours, formatMinutes, formatShortDate } from "@/lib/time";
 import { GOAL_STATUS_LABEL, type GoalStatus } from "@/lib/types";
+import { Ring } from "./Progress";
 
 export type FriendCardData = {
   id: string;
@@ -17,37 +19,103 @@ export type FriendCardData = {
   goal: { text: string; status: GoalStatus } | null;
 };
 
+const STATUS_DOT: Record<GoalStatus, string> = {
+  pending: "bg-accent",
+  done: "bg-live",
+  partial: "bg-warn",
+  missed: "bg-danger",
+};
+
+const STATUS_TEXT: Record<GoalStatus, string> = {
+  pending: "text-accent",
+  done: "text-live-strong",
+  partial: "text-warn",
+  missed: "text-danger",
+};
+
 function LiveClock({ since, accumulated }: { since: string; accumulated: number }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  return <span className="font-mono tabular-nums">{formatClock(accumulated + Math.max(0, now - Date.parse(since)))}</span>;
+  return <span className="tabular-nums">{formatClock(accumulated + Math.max(0, now - Date.parse(since)))}</span>;
 }
 
-function Expandable({ children, className }: { children: React.ReactNode; className: string }) {
-  const [open, setOpen] = useState(false);
+function Meter({ label, minutes, target, value }: { label: string; minutes: number; target: number; value: string }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2 rounded-xl bg-surface-2 p-2 ring-1 ring-inset ring-line/70 sm:gap-2.5 sm:p-2.5">
+      <Ring value={target ? minutes / target : 0} size={40} />
+      <div className="min-w-0">
+        <div className="text-xs text-muted">{label}</div>
+        <div className="truncate text-[13px] font-semibold sm:text-sm">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+function Toggle({
+  active,
+  disabled,
+  onClick,
+  controls,
+  children,
+}: {
+  active: boolean;
+  disabled: boolean;
+  onClick: () => void;
+  controls: string;
+  children: ReactNode;
+}) {
+  if (disabled) {
+    return (
+      <span className="flex items-center rounded-lg border border-dashed border-line-strong px-3 py-1.5 text-sm text-muted">
+        {children}
+      </span>
+    );
+  }
   return (
     <button
       type="button"
-      onClick={() => setOpen(!open)}
-      aria-expanded={open}
-      className={`block w-full text-left ${open ? "whitespace-pre-wrap" : "line-clamp-2"} ${className}`}
+      onClick={onClick}
+      aria-expanded={active}
+      aria-controls={controls}
+      className={`flex min-w-0 items-center justify-between gap-2 rounded-lg border px-3 py-1.5 text-sm transition-colors ${
+        active ? "border-accent/25 bg-accent-soft text-accent" : "border-line-strong bg-surface hover:bg-surface-2"
+      }`}
     >
-      {children}
+      <span className="flex min-w-0 items-center gap-2">{children}</span>
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 12 12"
+        aria-hidden
+        className={`shrink-0 text-muted transition-transform duration-200 ${active ? "rotate-180" : ""}`}
+      >
+        <path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
     </button>
   );
 }
 
-export function FriendCard({ f, maxWeek, me, href }: { f: FriendCardData; maxWeek: number; me: boolean; href?: string }) {
+export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; href?: string }) {
+  const [open, setOpen] = useState<"goal" | "report" | null>(null);
+  // Keeps the last panel's content while it collapses.
+  const [shown, setShown] = useState<"goal" | "report">("goal");
+  const panelId = useId();
+
+  const toggle = (which: "goal" | "report") => {
+    setShown(which);
+    setOpen(open === which ? null : which);
+  };
+
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5 shadow-card">
+    <div className="p-5">
       <div className="flex items-center justify-between gap-3">
         <span className="flex min-w-0 items-center gap-2.5">
           <span
             className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${
-              me ? "bg-accent-soft text-accent-hover" : "bg-surface-2 text-muted ring-1 ring-line"
+              me ? "bg-accent text-accent-ink" : "bg-surface-2 text-muted ring-1 ring-line"
             }`}
             aria-hidden
           >
@@ -60,11 +128,7 @@ export function FriendCard({ f, maxWeek, me, href }: { f: FriendCardData; maxWee
           ) : (
             <span className="truncate font-medium">{f.name}</span>
           )}
-          {me && (
-            <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-medium text-accent-hover">
-              вы
-            </span>
-          )}
+          {me && <span className="shrink-0 text-xs text-muted">вы</span>}
         </span>
         {f.liveSince ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
@@ -76,51 +140,57 @@ export function FriendCard({ f, maxWeek, me, href }: { f: FriendCardData; maxWee
         )}
       </div>
 
-      {f.goal ? (
-        <div className="mt-4 rounded-xl bg-surface-2 px-3.5 py-2.5">
-          <div className="flex items-center justify-between gap-2 text-xs text-muted">
-            <span>Цель недели</span>
-            <span
-              className={`font-medium ${
-                f.goal.status === "done" ? "text-live-strong" : f.goal.status === "missed" ? "text-danger" : ""
-              }`}
-            >
-              {GOAL_STATUS_LABEL[f.goal.status]}
-            </span>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Meter label="Сегодня" minutes={f.todayMin} target={DAY_TARGET_MIN} value={formatMinutes(f.todayMin)} />
+        <Meter label="Неделя" minutes={f.weekMin} target={WEEK_TARGET_MIN} value={`${formatHours(f.weekMin)} ч`} />
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <Toggle active={open === "goal"} disabled={!f.goal} onClick={() => toggle("goal")} controls={panelId}>
+          {f.goal ? (
+            <>
+              <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[f.goal.status]}`} aria-hidden />
+              <span className="truncate">Цель недели</span>
+            </>
+          ) : (
+            "Цели нет"
+          )}
+        </Toggle>
+        <Toggle active={open === "report"} disabled={!f.last} onClick={() => toggle("report")} controls={panelId}>
+          {f.last ? (
+            <>
+              Репорт
+            </>
+          ) : (
+            "Репортов нет"
+          )}
+        </Toggle>
+      </div>
+
+      <div
+        id={panelId}
+        inert={!open}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="mt-3 rounded-xl bg-surface-2 px-4 py-3 text-sm leading-relaxed ring-1 ring-inset ring-line/70">
+            {shown === "goal" && f.goal && (
+              <>
+                <p className={`mb-1 text-xs font-medium ${STATUS_TEXT[f.goal.status]}`}>{GOAL_STATUS_LABEL[f.goal.status]}</p>
+                <p className="whitespace-pre-wrap break-words">{f.goal.text}</p>
+              </>
+            )}
+            {shown === "report" && f.last && (
+              <>
+                <p className="mb-1 text-xs text-muted">
+                  {formatShortDate(f.last.startedAt)} · {formatMinutes(f.last.minutes)}
+                </p>
+                <p className="whitespace-pre-wrap break-words">{f.last.report}</p>
+              </>
+            )}
           </div>
-          <Expandable className="mt-1 text-sm leading-relaxed">{f.goal.text}</Expandable>
         </div>
-      ) : (
-        <p className="mt-4 rounded-xl border border-dashed border-line-strong px-3.5 py-2.5 text-xs text-muted">
-          Цель на неделю не задана
-        </p>
-      )}
-
-      <div className="mt-4 flex items-baseline gap-5 text-sm">
-        <span>
-          <span className="text-muted">сегодня </span>
-          <span className="font-mono tabular-nums">{formatMinutes(f.todayMin)}</span>
-        </span>
-        <span>
-          <span className="text-muted">неделя </span>
-          <span className="font-mono tabular-nums">{formatHours(f.weekMin)} ч</span>
-        </span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2 ring-1 ring-inset ring-line/70">
-        <div
-          className={`h-full rounded-full ${me ? "bg-accent" : "bg-ink/20"}`}
-          style={{ width: `${maxWeek ? (f.weekMin / maxWeek) * 100 : 0}%` }}
-        />
-      </div>
-
-      {f.last && (
-        <Expandable className="mt-4 text-sm leading-relaxed text-muted">
-          <span className="text-ink/70">
-            {formatShortDate(f.last.startedAt)} · {formatMinutes(f.last.minutes)} —{" "}
-          </span>
-          {f.last.report}
-        </Expandable>
-      )}
     </div>
   );
 }

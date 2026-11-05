@@ -198,7 +198,7 @@ async function Calendar({
                   {Number(k.slice(8))}
                 </span>
                 {minutes > 0 && (
-                  <span className="font-mono text-[11px] leading-none text-ink sm:text-xs">{formatHours(minutes)}</span>
+                  <span className="text-[11px] font-medium leading-none tabular-nums text-ink sm:text-xs">{formatHours(minutes)}</span>
                 )}
                 <span className="flex h-1.5 gap-0.5">
                   {people.map((id) => (
@@ -258,7 +258,7 @@ function PersonBlock({ name, minutes, sessions }: { name: string; minutes: numbe
 const STATUS_CLASS: Record<GoalStatus, string> = {
   pending: "text-muted",
   done: "text-live",
-  partial: "text-accent",
+  partial: "text-warn",
   missed: "text-danger",
 };
 
