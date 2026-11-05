@@ -37,7 +37,7 @@ export default async function ProfilePage({ params }: PageProps<"/u/[id]">) {
 
   return (
     <main className="mx-auto w-full max-w-xl px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
-      <Header userId={user.id} name={me.display_name} />
+      <Header userId={user.id} name={me.display_name} current={isMe ? "profile" : undefined} />
 
       <div className="mb-6 flex items-center justify-between gap-4 px-1">
         <h1 className="text-2xl font-semibold tracking-tight">{profile.display_name}</h1>

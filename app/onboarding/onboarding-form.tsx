@@ -7,7 +7,7 @@ import { createProfile, type FormState } from "../profile-actions";
 export function OnboardingForm() {
   const [state, action, pending] = useActionState(createProfile, {} as FormState);
   return (
-    <form action={action} className="mt-8 flex flex-col gap-3">
+    <form action={action} className="mt-6 flex flex-col gap-3">
       <input
         name="display_name"
         required

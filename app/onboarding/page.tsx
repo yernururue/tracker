@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import { Logo } from "@/components/Header";
+import { card } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingForm } from "./onboarding-form";
 
@@ -13,10 +15,13 @@ export default async function OnboardingPage() {
   if (profile) redirect("/");
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Как тебя зовут?</h1>
-      <p className="mt-2 text-muted">Это имя увидят друзья в рейтинге и ленте.</p>
-      <OnboardingForm />
+    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-4 py-12">
+      <div className={`${card} sm:p-8`}>
+        <Logo size={40} />
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Как тебя зовут?</h1>
+        <p className="mt-1.5 text-muted">Это имя увидят друзья в рейтинге и ленте.</p>
+        <OnboardingForm />
+      </div>
     </main>
   );
 }

@@ -79,7 +79,8 @@ export function InstructionsButton() {
     <button
       type="button"
       onClick={() => open()}
-      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:bg-surface/60 hover:text-ink"
+      aria-label="Как учиться"
+      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface/70 hover:text-ink"
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
         <path
@@ -89,7 +90,7 @@ export function InstructionsButton() {
           strokeLinejoin="round"
         />
       </svg>
-      Как учиться
+      <span className="hidden sm:inline">Как учиться</span>
     </button>
   );
 }

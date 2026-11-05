@@ -1,3 +1,5 @@
+import { Logo } from "@/components/Header";
+import { card } from "@/components/ui";
 import { LoginForm } from "./login-form";
 
 const ERRORS: Record<string, string> = {
@@ -10,13 +12,16 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const message = typeof error === "string" ? ERRORS[error] : undefined;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Учёба</h1>
-      <p className="mt-2 text-muted">Вход по ссылке на почту. Пароль не нужен.</p>
-      {message && (
-        <p className="mt-6 rounded-xl border border-danger/30 px-4 py-3 text-sm text-danger">{message}</p>
-      )}
-      <LoginForm />
+    <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-4 py-12">
+      <div className={`${card} sm:p-8`}>
+        <Logo size={40} />
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Учёба</h1>
+        <p className="mt-1.5 text-muted">Вход по ссылке на почту. Пароль не нужен.</p>
+        {message && (
+          <p className="mt-6 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">{message}</p>
+        )}
+        <LoginForm />
+      </div>
     </main>
   );
 }

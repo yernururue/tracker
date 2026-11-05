@@ -215,26 +215,31 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
 
   const state = !timer ? "idle" : running ? "running" : "paused";
   const stateLabel = { idle: "Готов", running: "Идёт", paused: "Пауза" }[state];
+  const badge = {
+    idle: "bg-surface-2 text-muted",
+    running: "bg-live-soft text-live-strong",
+    paused: "bg-accent-soft text-accent-hover",
+  }[state];
 
   return (
     <section className={card}>
       <div className="flex items-center justify-between">
         <span className={label}>Таймер</span>
-        <span className="flex items-center gap-2 text-sm text-muted">
-          {state === "running" && <span className="size-2 rounded-full bg-live" aria-hidden />}
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${badge}`}>
+          {state === "running" && <span className="size-1.5 rounded-full bg-live" aria-hidden />}
           {saving ? "Сохраняю…" : inReport ? "Отчёт" : stateLabel}
         </span>
       </div>
 
       <p
-        className={`mt-8 text-center font-mono text-5xl font-medium tabular-nums tracking-tight sm:text-6xl ${
-          state === "idle" ? "text-muted/60" : ""
+        className={`mt-7 text-center font-mono text-[3.25rem] font-medium leading-none tabular-nums tracking-tight sm:text-7xl ${
+          state === "idle" ? "text-ink/25" : ""
         }`}
       >
         {formatClock(elapsed)}
       </p>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-7 flex gap-3">
         {state === "idle" && (
           <button onClick={start} className={`${btnPrimary} flex-1`}>
             Начать
@@ -285,7 +290,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       <Modal open={inReport} onClose={() => setMode("timer")} title="Репорт">
         <form onSubmit={save} className="flex flex-col gap-5">
           {elapsed > EIGHT_HOURS && (
-            <p className="rounded-xl border border-danger/30 px-4 py-3 text-sm text-danger">
+            <p className="rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">
               Похоже, таймер забыли выключить — поправь минуты
             </p>
           )}
@@ -316,7 +321,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
                 Как писать репорт
               </button>
             </div>
-            <ol className="list-decimal space-y-0.5 pl-5 text-sm leading-relaxed text-muted">
+            <ol className="list-decimal space-y-0.5 rounded-xl bg-surface-2 py-3 pl-9 pr-4 text-sm leading-relaxed text-muted marker:text-muted/70">
               {QUESTIONS.map((q) => (
                 <li key={q}>{q}</li>
               ))}

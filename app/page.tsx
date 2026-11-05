@@ -73,10 +73,10 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
     <InstructionsProvider blocks={getInstructions()} autoOpen={!profile.seen_instructions}>
       <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
         <AutoRefresh />
-        <Header userId={user.id} name={profile.display_name} withInstructions />
+        <Header userId={user.id} name={profile.display_name} current="home" withInstructions />
 
         {loadError && (
-          <p className="mb-4 rounded-xl border border-danger/30 bg-surface px-4 py-3 text-sm text-danger">
+          <p className="mb-4 rounded-xl border border-danger/25 bg-surface px-4 py-3 text-sm text-danger shadow-card">
             Не все данные загрузились: {loadError.message}
           </p>
         )}
@@ -89,8 +89,8 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
 
           <section>
             <div className="mb-3 flex items-baseline justify-between px-1">
-              <span className={label}>Друзья · неделя</span>
-              <Link href={demo ? "/" : "/?demo"} className="text-xs text-muted hover:text-ink">
+              <span className={label}>Друзья за неделю</span>
+              <Link href={demo ? "/" : "/?demo"} className="rounded-full px-2 py-1 text-xs text-muted transition-colors hover:bg-surface hover:text-ink">
                 {demo ? "скрыть демо" : "демо"}
               </Link>
             </div>

@@ -8,6 +8,12 @@ import { SECTION_GOALS, useInstructions } from "./Instructions";
 import { btnGhost, btnPrimary, card, input, label } from "./ui";
 
 const STATUSES: GoalStatus[] = ["pending", "done", "partial", "missed"];
+const STATUS_ACTIVE: Record<GoalStatus, string> = {
+  pending: "bg-surface text-ink",
+  done: "bg-live-soft text-live-strong",
+  partial: "bg-accent-soft text-accent-hover",
+  missed: "bg-[#fbe3df] text-[#9b3a2e]",
+};
 
 export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | null; userId: string; weekStart: string }) {
   const router = useRouter();
@@ -127,17 +133,19 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
         goal && (
           <>
             <p className="mt-3 whitespace-pre-wrap break-words leading-relaxed">{goal.goal_text}</p>
-            <div className="mt-4 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Статус цели">
+            <div
+              className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1 ring-1 ring-inset ring-line"
+              role="radiogroup"
+              aria-label="Статус цели"
+            >
               {STATUSES.map((s) => (
                 <button
                   key={s}
                   role="radio"
                   aria-checked={goal.status === s}
                   onClick={() => setStatus(s)}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                    goal.status === s
-                      ? "border-accent bg-accent text-accent-ink"
-                      : "border-line text-muted hover:border-ink/20 hover:text-ink"
+                  className={`rounded-lg px-2 py-2 text-sm transition-colors ${
+                    goal.status === s ? `font-medium shadow-card ${STATUS_ACTIVE[s]}` : "text-muted hover:bg-surface/70 hover:text-ink"
                   }`}
                 >
                   {GOAL_STATUS_LABEL[s]}

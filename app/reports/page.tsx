@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Header } from "@/components/Header";
-import { btnSecondary, card } from "@/components/ui";
+import { btnSecondary, card, pill } from "@/components/ui";
 import { requireProfile } from "@/lib/auth";
 import { formatWeekRange, groupByPerson, parseRange, RANGES, type Range, type ReportSession } from "@/lib/reports";
 import { loadProfiles, loadReportDoc } from "@/lib/reports-data";
@@ -43,11 +43,6 @@ function shiftMonth(m: string, delta: number): string {
   return d.toISOString().slice(0, 7);
 }
 
-const pill = (active: boolean) =>
-  `rounded-full border px-3 py-1.5 text-sm transition-colors ${
-    active ? "border-ink bg-ink text-bg" : "border-line bg-surface text-muted hover:text-ink"
-  }`;
-
 export default async function ReportsPage({ searchParams }: PageProps<"/reports">) {
   const { supabase, user, profile: me } = await requireProfile();
   const sp = await searchParams;
@@ -69,7 +64,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
-      <Header userId={user.id} name={me.display_name} />
+      <Header userId={user.id} name={me.display_name} current="reports" />
       <h1 className="mb-5 px-1 text-2xl font-semibold tracking-tight">Репорты</h1>
 
       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -83,7 +78,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
         ))}
       </div>
 
-      <div className="mb-6 flex gap-1 rounded-xl border border-line bg-surface p-1" role="tablist">
+      <div className="mb-6 flex gap-1 rounded-xl border border-line bg-surface p-1 shadow-card" role="tablist">
         {(
           [
             ["calendar", "Календарь"],
@@ -97,7 +92,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
             href={href(params, { tab: t })}
             scroll={false}
             className={`flex-1 rounded-lg px-3 py-2 text-center text-sm transition-colors ${
-              params.tab === t ? "bg-surface-2 font-medium text-ink" : "text-muted hover:text-ink"
+              params.tab === t ? "bg-accent-soft font-medium text-accent-hover" : "text-muted hover:bg-surface-2 hover:text-ink"
             }`}
           >
             {title}
@@ -196,7 +191,7 @@ async function Calendar({
                 href={href(params, { d: isSel ? null : k })}
                 scroll={false}
                 className={`flex aspect-square flex-col items-center justify-between rounded-lg border p-1 transition-colors sm:p-1.5 ${
-                  isSel ? "border-ink" : isToday ? "border-accent" : "border-transparent hover:border-line"
+                  isSel ? "border-accent ring-2 ring-accent/15" : isToday ? "border-accent/60" : "border-transparent hover:border-line-strong"
                 } ${minutes ? "bg-surface-2" : ""} ${inMonth ? "" : "opacity-35"}`}
               >
                 <span className={`self-start text-[11px] leading-none ${isToday ? "font-semibold text-accent" : "text-ink/70"}`}>
@@ -225,7 +220,7 @@ async function Calendar({
       </section>
 
       {params.d && selected && (
-        <section className="mt-8 px-1">
+        <section className={`${card} mt-4`}>
           <h2 className="mb-4 text-lg font-semibold capitalize">{formatDayKey(params.d)}</h2>
           {selected.length === 0 ? (
             <p className="text-muted">В этот день никто не занимался.</p>
@@ -288,11 +283,11 @@ async function Doc({ supabase, params, profiles }: { supabase: SupabaseClient; p
 
       {error && <p className="mb-4 text-sm text-danger">{error}</p>}
 
-      <article className="max-w-[65ch] px-1">
-        {weeks.length === 0 && <p className="text-muted">Нет репортов за этот период.</p>}
+      <article className="flex flex-col gap-4">
+        {weeks.length === 0 && <p className={`${card} text-muted`}>Нет репортов за этот период.</p>}
         {weeks.map((w) => (
-          <section key={w.weekStart} className="mb-12">
-            <h2 className="border-b border-ink/15 pb-2 text-xl font-semibold tracking-tight">
+          <section key={w.weekStart} className={`${card} max-w-none [&>*]:max-w-[65ch]`}>
+            <h2 className="border-b border-line pb-3 text-xl font-semibold tracking-tight">
               Неделя {formatWeekRange(w.weekStart)}
             </h2>
             <ul className="mt-4 space-y-3">
