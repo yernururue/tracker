@@ -26,6 +26,32 @@ create table if not exists public.sessions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.weekly_goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  week_start date not null, -- Monday of the week, Asia/Almaty
+  goal_text text not null check (char_length(btrim(goal_text)) between 1 and 500),
+  status text not null default 'pending' check (status in ('pending', 'done', 'partial', 'missed')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, week_start)
+);
+
+create or replace function public.touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists weekly_goals_touch on public.weekly_goals;
+create trigger weekly_goals_touch before update on public.weekly_goals
+  for each row execute function public.touch_updated_at();
+
 create index if not exists sessions_user_started_idx on public.sessions (user_id, started_at desc);
 create index if not exists sessions_started_idx on public.sessions (started_at desc);
 create index if not exists sessions_created_idx on public.sessions (created_at desc);
@@ -40,6 +66,9 @@ with (security_invoker = true) as
 grant select on public.user_totals to authenticated;
 revoke select on public.user_totals from anon;
 
+-- Instructions modal is shown automatically once.
+alter table public.profiles add column if not exists seen_instructions boolean not null default false;
+
 -- Daily goal was removed from the app.
 alter table public.profiles drop column if exists daily_goal_minutes;
 
@@ -49,6 +78,7 @@ alter table public.profiles drop column if exists daily_goal_minutes;
 alter table public.profiles enable row level security;
 alter table public.active_timers enable row level security;
 alter table public.sessions enable row level security;
+alter table public.weekly_goals enable row level security;
 
 drop policy if exists "profiles_select" on public.profiles;
 drop policy if exists "profiles_insert" on public.profiles;
@@ -76,6 +106,15 @@ create policy "sessions_select" on public.sessions for select to authenticated u
 create policy "sessions_insert" on public.sessions for insert to authenticated with check (user_id = (select auth.uid()));
 create policy "sessions_update" on public.sessions for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "sessions_delete" on public.sessions for delete to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "goals_select" on public.weekly_goals;
+drop policy if exists "goals_insert" on public.weekly_goals;
+drop policy if exists "goals_update" on public.weekly_goals;
+drop policy if exists "goals_delete" on public.weekly_goals;
+create policy "goals_select" on public.weekly_goals for select to authenticated using (true);
+create policy "goals_insert" on public.weekly_goals for insert to authenticated with check (user_id = (select auth.uid()));
+create policy "goals_update" on public.weekly_goals for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+create policy "goals_delete" on public.weekly_goals for delete to authenticated using (user_id = (select auth.uid()));
 
 -- ============ Timer functions ============
 -- All timestamps come from the database clock (now()), so devices with skewed
