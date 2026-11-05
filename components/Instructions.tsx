@@ -8,8 +8,8 @@ import { Modal } from "./Modal";
 type Ctx = { open: (heading?: string) => void };
 const InstructionsContext = createContext<Ctx>({ open: () => {} });
 
-export const SECTION_GOALS = "Настоящая цель — результат за неделю";
-export const SECTION_REPORT = "Как писать репорт";
+export const SECTION_GOALS = "The real goal is a result by the end of the week";
+export const SECTION_REPORT = "How to write a report";
 
 export function useInstructions() {
   return use(InstructionsContext);
@@ -46,7 +46,7 @@ export function InstructionsProvider({
   return (
     <InstructionsContext value={{ open }}>
       {children}
-      <Modal open={isOpen} onClose={close} title={title?.type === "h1" ? title.text : "Как учиться"} scrollToId={target}>
+      <Modal open={isOpen} onClose={close} title={title?.type === "h1" ? title.text : "How to study"} scrollToId={target}>
         <article className="max-w-[65ch] leading-relaxed">
           {blocks.map((b, i) => {
             if (b.type === "h1") return null;
@@ -79,7 +79,7 @@ export function InstructionsButton() {
     <button
       type="button"
       onClick={() => open()}
-      aria-label="Как учиться"
+      aria-label="How to study"
       className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface/70 hover:text-ink"
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -90,7 +90,7 @@ export function InstructionsButton() {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="hidden sm:inline">Как учиться</span>
+      <span className="hidden sm:inline">How to study</span>
     </button>
   );
 }

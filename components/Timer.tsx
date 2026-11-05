@@ -15,12 +15,12 @@ const MIN_REPORT = 10;
 const DRAFT_KEY = "report-draft";
 
 const QUESTIONS = [
-  "Что конкретно сделал? Задачи, ссылки, коммиты.",
-  "Где застрял и как разобрался? Что не получилось?",
-  "Какую одну новую вещь можешь объяснить своими словами?",
-  "Что делаешь дальше?",
+  "What exactly did you do? Tasks, links, commits.",
+  "Where did you get stuck and how did you get unstuck? What didn’t work?",
+  "What one new thing can you explain in your own words?",
+  "What’s next?",
 ];
-const QUESTION_HEADINGS = ["Сделал:", "Застрял:", "Понял:", "Дальше:"];
+const QUESTION_HEADINGS = ["Did:", "Stuck:", "Learned:", "Next:"];
 
 function readDraft(): string {
   try {
@@ -102,7 +102,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
   const elapsed = elapsedMs(timer, running ? now : 0);
 
   useEffect(() => {
-    document.title = running ? `${formatClock(elapsed)} · Учёба` : "Учёба";
+    document.title = running ? `${formatClock(elapsed)} · Study` : "Study";
   }, [running, elapsed]);
 
   const nowIso = () => new Date(Date.now() + offset).toISOString();
@@ -115,7 +115,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       inFlight.current -= 1;
       setPending((n) => n - 1);
       if (error) {
-        setError("Не удалось синхронизировать. Обновляю состояние…");
+        setError("Couldn’t sync. Refreshing…");
         router.refresh();
         return;
       }
@@ -204,7 +204,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       if (error) {
         setTimer(prevTimer);
         setMode("report");
-        setError(`Не удалось сохранить: ${error.message}`);
+        setError(`Couldn’t save: ${error.message}`);
         return;
       }
       setReport("");
@@ -215,7 +215,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
   const inReport = mode === "report" || mode === "report-confirm-discard";
 
   const state = !timer ? "idle" : running ? "running" : "paused";
-  const stateLabel = { idle: "Готов", running: "Идёт", paused: "Пауза" }[state];
+  const stateLabel = { idle: "Ready", running: "Running", paused: "Paused" }[state];
   const badge = {
     idle: "bg-surface-2 text-muted",
     running: "bg-live-soft text-live-strong",
@@ -225,10 +225,10 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
   return (
     <section className={card}>
       <div className="flex items-center justify-between">
-        <span className={label}>Таймер</span>
+        <span className={label}>Timer</span>
         <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${badge}`}>
           {state === "running" && <span className="size-1.5 rounded-full bg-live" aria-hidden />}
-          {saving ? "Сохраняю…" : inReport ? "Отчёт" : stateLabel}
+          {saving ? "Saving…" : inReport ? "Report" : stateLabel}
         </span>
       </div>
 
@@ -243,22 +243,22 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       <div className="mt-7 flex gap-3">
         {state === "idle" && (
           <button onClick={start} className={`${btnPrimary} flex-1`}>
-            Начать
+            Start
           </button>
         )}
         {state === "running" && (
           <button onClick={pause} className={`${btnSecondary} flex-1`}>
-            Пауза
+            Pause
           </button>
         )}
         {state === "paused" && (
           <button onClick={resume} className={`${btnSecondary} flex-1`}>
-            Продолжить
+            Resume
           </button>
         )}
         {state !== "idle" && (
           <button onClick={finish} className={`${btnPrimary} flex-1`}>
-            Завершить
+            Finish
           </button>
         )}
       </div>
@@ -269,34 +269,34 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
         <div className="mt-4 flex justify-center">
           {mode === "confirm-discard" ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted">Время не сохранится.</span>
+              <span className="text-sm text-muted">The time won’t be saved.</span>
               <button
                 onClick={discard}
                 className="rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
               >
-                Удалить
+                Delete
               </button>
               <button onClick={() => setMode("timer")} className={btnGhost}>
-                Отмена
+                Cancel
               </button>
             </div>
           ) : (
             <button onClick={() => setMode("confirm-discard")} className={btnGhost}>
-              Удалить сессию
+              Delete session
             </button>
           )}
         </div>
       )}
 
-      <Modal open={inReport} onClose={() => setMode("timer")} title="Репорт">
+      <Modal open={inReport} onClose={() => setMode("timer")} title="Report">
         <form onSubmit={save} className="flex flex-col gap-5">
           {elapsed > EIGHT_HOURS && (
             <p className="rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">
-              Похоже, таймер забыли выключить — поправь минуты
+              Looks like the timer was left running. Adjust the minutes.
             </p>
           )}
           <label className="flex flex-col gap-2">
-            <span className={label}>Минут</span>
+            <span className={label}>Minutes</span>
             <input
               type="number"
               inputMode="numeric"
@@ -308,18 +308,18 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
               onChange={(e) => setMinutes(e.target.value)}
               className={`${input} max-w-36 tabular-nums`}
             />
-            {!minutesValid && minutes !== "" && <span className="text-sm text-danger">От 1 до 960 минут</span>}
+            {!minutesValid && minutes !== "" && <span className="text-sm text-danger">1 to 960 minutes</span>}
           </label>
 
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between gap-3">
-              <span className={label}>Что сделал</span>
+              <span className={label}>What you did</span>
               <button
                 type="button"
                 onClick={() => instructions.open(SECTION_REPORT)}
                 className="text-sm text-muted underline decoration-line underline-offset-4 hover:text-ink"
               >
-                Как писать репорт
+                How to write a report
               </button>
             </div>
             <ol className="list-decimal space-y-0.5 rounded-xl bg-surface-2 py-3 pl-9 pr-4 text-sm leading-relaxed text-muted marker:text-muted/70">
@@ -332,16 +332,16 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
               required
               value={report}
               onChange={(e) => setReport(e.target.value)}
-              placeholder="Что конкретно сделал? Задачи, ссылки, что не получилось"
-              aria-label="Репорт"
+              placeholder="What exactly did you do? Tasks, links, what didn’t work"
+              aria-label="Report"
               className={`${input} mt-1 resize-none overflow-hidden leading-relaxed`}
             />
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-muted">
-                {reportValid ? "" : `Минимум ${MIN_REPORT} символов, сейчас ${report.trim().length}`}
+                {reportValid ? "" : `At least ${MIN_REPORT} characters (${report.trim().length} so far)`}
               </span>
               <button type="button" onClick={insertQuestions} className={btnGhost}>
-                Вставить вопросы в текст
+                Insert questions
               </button>
             </div>
           </div>
@@ -350,31 +350,31 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <button type="submit" disabled={!minutesValid || !reportValid} className={`${btnPrimary} sm:flex-1`}>
-              Сохранить
+              Save
             </button>
             <button type="button" onClick={() => setMode("timer")} className={`${btnSecondary} sm:flex-1`}>
-              Вернуться к таймеру
+              Back to timer
             </button>
           </div>
 
           <div className="flex justify-center">
             {mode === "report-confirm-discard" ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted">Сессия и текст удалятся.</span>
+                <span className="text-sm text-muted">The session and the text will be deleted.</span>
                 <button
                   type="button"
                   onClick={discard}
                   className="rounded-lg px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
                 >
-                  Удалить
+                  Delete
                 </button>
                 <button type="button" onClick={() => setMode("report")} className={btnGhost}>
-                  Отмена
+                  Cancel
                 </button>
               </div>
             ) : (
               <button type="button" onClick={() => setMode("report-confirm-discard")} className={btnGhost}>
-                Удалить сессию
+                Delete session
               </button>
             )}
           </div>

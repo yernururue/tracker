@@ -8,7 +8,7 @@ export async function loadProfiles(supabase: SupabaseClient): Promise<Profile[]>
   return data ?? [];
 }
 
-/** Data behind the "Общий отчёт" tab and its .md export, so both always match. */
+/** Data behind the "Combined report" tab and its .md export, so both always match. */
 export async function loadReportDoc(
   supabase: SupabaseClient,
   profiles: Profile[],
@@ -36,11 +36,11 @@ export async function loadReportDoc(
 
   const shown = personId ? profiles.filter((p) => p.id === personId) : profiles;
   const weeks = groupReports(shown, sRes.data ?? [], gRes.data ?? []);
-  const who = personId ? (shown[0]?.display_name ?? "—") : "все";
+  const who = personId ? (shown[0]?.display_name ?? "—") : "everyone";
   const rangeLabel = RANGES.find((r) => r.value === range)!.label.toLowerCase();
   return {
     weeks,
-    title: `Репорты: ${who}, ${rangeLabel}`,
+    title: `Reports: ${who}, ${rangeLabel}`,
     error: sRes.error?.message ?? gRes.error?.message ?? null,
   };
 }

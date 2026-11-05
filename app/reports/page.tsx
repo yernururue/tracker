@@ -21,8 +21,8 @@ type Tab = "calendar" | "doc";
 type Params = { tab: Tab; u: string | null; m: string; d: string | null; range: Range };
 
 const PERSON_COLORS = ["var(--p1)", "var(--p2)", "var(--p3)", "var(--p4)"];
-const WEEKDAYS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
-const monthFmt = new Intl.DateTimeFormat("ru-RU", { timeZone: "UTC", month: "long", year: "numeric" });
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const monthFmt = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", month: "long", year: "numeric" });
 
 function href(p: Params, over: Partial<Params>): string {
   const n = { ...p, ...over };
@@ -65,11 +65,11 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
   return (
     <main className="mx-auto w-full max-w-3xl px-4 pb-16 pt-4 sm:px-6 sm:pt-8">
       <Header userId={user.id} name={me.display_name} current="reports" />
-      <h1 className="mb-5 px-1 text-2xl font-semibold tracking-tight">Репорты</h1>
+      <h1 className="mb-5 px-1 text-2xl font-semibold tracking-tight">Reports</h1>
 
       <div className="mb-3 flex flex-wrap gap-1.5">
         <Link href={href(params, { u: null, d: null })} className={pill(!params.u)} scroll={false}>
-          Все
+          All
         </Link>
         {profiles.map((p) => (
           <Link key={p.id} href={href(params, { u: p.id, d: null })} className={pill(params.u === p.id)} scroll={false}>
@@ -81,8 +81,8 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
       <div className="mb-6 flex gap-1 rounded-xl border border-line bg-surface p-1 shadow-card" role="tablist">
         {(
           [
-            ["calendar", "Календарь"],
-            ["doc", "Общий отчёт"],
+            ["calendar", "Calendar"],
+            ["doc", "Combined report"],
           ] as const
         ).map(([t, title]) => (
           <Link
@@ -157,7 +157,7 @@ async function Calendar({
             href={href(params, { m: shiftMonth(params.m, -1), d: null })}
             scroll={false}
             className="rounded-lg px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink"
-            aria-label="Предыдущий месяц"
+            aria-label="Previous month"
           >
             ←
           </Link>
@@ -166,7 +166,7 @@ async function Calendar({
             href={href(params, { m: shiftMonth(params.m, 1), d: null })}
             scroll={false}
             className="rounded-lg px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-ink"
-            aria-label="Следующий месяц"
+            aria-label="Next month"
           >
             →
           </Link>
@@ -223,7 +223,7 @@ async function Calendar({
         <section className={`${card} mt-4`}>
           <h2 className="mb-4 text-lg font-semibold capitalize">{formatDayKey(params.d)}</h2>
           {selected.length === 0 ? (
-            <p className="text-muted">В этот день никто не занимался.</p>
+            <p className="text-muted">Nobody studied this day.</p>
           ) : (
             <div className="flex max-w-[65ch] flex-col gap-6">
               {selected.map((p) => (
@@ -277,34 +277,34 @@ async function Doc({ supabase, params, profiles }: { supabase: SupabaseClient; p
           ))}
         </div>
         <a href={exportHref} download className={`${btnSecondary} h-10 px-4 text-sm`}>
-          Скачать .md
+          Download .md
         </a>
       </div>
 
       {error && <p className="mb-4 text-sm text-danger">{error}</p>}
 
       <article className="flex flex-col gap-4">
-        {weeks.length === 0 && <p className={`${card} text-muted`}>Нет репортов за этот период.</p>}
+        {weeks.length === 0 && <p className={`${card} text-muted`}>No reports for this period.</p>}
         {weeks.map((w) => (
           <section key={w.weekStart} className={`${card} max-w-none [&>*]:max-w-[65ch]`}>
             <h2 className="border-b border-line pb-3 text-xl font-semibold tracking-tight">
-              Неделя {formatWeekRange(w.weekStart)}
+              Week of {formatWeekRange(w.weekStart)}
             </h2>
             <ul className="mt-4 space-y-3">
               {w.people.map((p) => (
                 <li key={p.profile.id} className="leading-relaxed">
                   <span className="font-medium">{p.profile.display_name}</span>
-                  <span className="text-muted"> · {formatHours(p.minutes)} ч</span>
+                  <span className="text-muted"> · {formatHours(p.minutes)}h</span>
                   <br />
                   {p.goal ? (
                     <>
-                      <span className="text-ink/80">Цель: {p.goal.goal_text}</span>{" "}
+                      <span className="text-ink/80">Goal: {p.goal.goal_text}</span>{" "}
                       <span className={`text-sm ${STATUS_CLASS[p.goal.status]}`}>
                         ({GOAL_STATUS_LABEL[p.goal.status].toLowerCase()})
                       </span>
                     </>
                   ) : (
-                    <span className="text-sm text-muted">Цель не задана</span>
+                    <span className="text-sm text-muted">No goal set</span>
                   )}
                 </li>
               ))}

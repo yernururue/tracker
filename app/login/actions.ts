@@ -10,12 +10,12 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { status: "error", message: "Введи корректный email.", email };
+    return { status: "error", message: "Enter a valid email.", email };
   }
   if (!isAllowed(email)) {
     return {
       status: "error",
-      message: "Этого email нет в списке участников. Попроси добавить его в ALLOWED_EMAILS.",
+      message: "This email isn’t on the member list. Ask to have it added to ALLOWED_EMAILS.",
       email,
     };
   }
@@ -36,8 +36,8 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
     return {
       status: "error",
       message: rate
-        ? "Слишком много попыток. Подожди минуту и попробуй снова."
-        : `Не получилось отправить письмо: ${error.message}`,
+        ? "Too many attempts. Wait a minute and try again."
+        : `Couldn’t send the email: ${error.message}`,
       email,
     };
   }

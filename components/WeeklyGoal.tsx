@@ -53,7 +53,7 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
     if (error) {
       setGoal(prev);
       setEditing(true);
-      setError(`Не удалось сохранить: ${error.message}`);
+      setError(`Couldn’t save: ${error.message}`);
       return;
     }
     router.refresh();
@@ -71,7 +71,7 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
       .eq("week_start", weekStart);
     if (error) {
       setGoal(prev);
-      setError(`Не удалось сохранить: ${error.message}`);
+      setError(`Couldn’t save: ${error.message}`);
       return;
     }
     router.refresh();
@@ -82,7 +82,7 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
   return (
     <section className={card}>
       <div className="flex items-center justify-between gap-3">
-        <span className={label}>Цель недели</span>
+        <span className={label}>Weekly goal</span>
         {goal && !editing && (
           <button
             onClick={() => {
@@ -91,7 +91,7 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
             }}
             className={`${btnGhost} -my-2 -mr-3`}
           >
-            Изменить
+            Edit
           </button>
         )}
       </div>
@@ -104,27 +104,27 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
             maxLength={500}
             rows={2}
             required
-            placeholder="К воскресенью я…"
-            aria-label="Цель недели"
+            placeholder="By Sunday I will…"
+            aria-label="Weekly goal"
             className={`${input} resize-none leading-relaxed`}
           />
           <p className="text-sm text-muted">
-            Цель, которую можно проверить артефактом: код, задачи, ссылка.{" "}
+            A goal you can prove with an artifact: code, solved problems, a link.{" "}
             <button
               type="button"
               onClick={() => instructions.open(SECTION_GOALS)}
               className="underline decoration-line underline-offset-4 hover:text-ink"
             >
-              Как поставить хорошую цель
+              How to set a good goal
             </button>
           </p>
           <div className="flex gap-2">
             <button type="submit" disabled={!text.trim()} className={`${btnPrimary} h-10 px-5 text-sm`}>
-              Сохранить
+              Save
             </button>
             {editing && (
               <button type="button" onClick={() => setEditing(false)} className={btnGhost}>
-                Отмена
+                Cancel
               </button>
             )}
           </div>
@@ -136,7 +136,7 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
             <div
               className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1 ring-1 ring-inset ring-line"
               role="radiogroup"
-              aria-label="Статус цели"
+              aria-label="Goal status"
             >
               {STATUSES.map((s) => (
                 <button

@@ -3,23 +3,19 @@ import { formatHours } from "@/lib/time";
 import { card, label } from "./ui";
 
 function daysWord(n: number): string {
-  const m10 = n % 10;
-  const m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return "день";
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return "дня";
-  return "дней";
+  return n === 1 ? "day" : "days";
 }
 
 export function Stats({ stats }: { stats: MyStats }) {
   const items = [
-    { title: "Сегодня", value: formatHours(stats.today), unit: "ч" },
-    { title: "Неделя", value: formatHours(stats.week), unit: "ч" },
-    { title: "Серия", value: String(stats.streak), unit: daysWord(stats.streak) },
-    { title: "Всего", value: formatHours(stats.total), unit: "ч" },
+    { title: "Today", value: formatHours(stats.today), unit: "h" },
+    { title: "This week", value: formatHours(stats.week), unit: "h" },
+    { title: "Streak", value: String(stats.streak), unit: daysWord(stats.streak) },
+    { title: "Total", value: formatHours(stats.total), unit: "h" },
   ];
   return (
     <section className={card}>
-      <span className={label}>Статистика</span>
+      <span className={label}>Stats</span>
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
         {items.map((it) => (
           <div key={it.title}>

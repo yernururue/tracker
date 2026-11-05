@@ -61,28 +61,28 @@ export function formatClock(ms: number): string {
 export function formatMinutes(min: number): string {
   const h = Math.floor(min / 60);
   const m = min % 60;
-  if (h === 0) return `${m} мин`;
-  if (m === 0) return `${h} ч`;
-  return `${h} ч ${m} мин`;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 }
 
 export function formatHours(min: number): string {
-  return (min / 60).toLocaleString("ru-RU", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+  return (min / 60).toLocaleString("en-US", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 }
 
-const longDateFmt = new Intl.DateTimeFormat("ru-RU", {
+const longDateFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
   weekday: "short",
   day: "numeric",
   month: "long",
 });
 
-/** "пн, 3 ноября" for a day key */
+/** "Mon 3 November" for a day key */
 export function formatDayKey(key: string): string {
   return longDateFmt.format(new Date(keyToUtcMidnight(key)));
 }
 
-const timeFmt = new Intl.DateTimeFormat("ru-RU", {
+const timeFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: TZ,
   hour: "2-digit",
   minute: "2-digit",
@@ -92,7 +92,7 @@ export function formatTime(date: string | Date): string {
   return timeFmt.format(new Date(date));
 }
 
-const shortDateFmt = new Intl.DateTimeFormat("ru-RU", {
+const shortDateFmt = new Intl.DateTimeFormat("en-GB", {
   timeZone: TZ,
   day: "numeric",
   month: "short",

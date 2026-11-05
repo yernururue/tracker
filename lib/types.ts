@@ -40,8 +40,8 @@ export type WeeklyGoal = {
 };
 
 export const GOAL_STATUS_LABEL: Record<GoalStatus, string> = {
-  pending: "В процессе",
-  done: "Сделано",
-  partial: "Частично",
-  missed: "Не сделано",
+  pending: "In progress",
+  done: "Done",
+  partial: "Partial",
+  missed: "Missed",
 };

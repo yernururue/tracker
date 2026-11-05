@@ -13,7 +13,7 @@ function parseName(formData: FormData): string | null {
 
 export async function createProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = parseName(formData);
-  if (!name) return { error: "Имя должно быть от 1 до 40 символов." };
+  if (!name) return { error: "Name must be 1 to 40 characters." };
 
   const supabase = await createClient();
   const {
@@ -24,14 +24,14 @@ export async function createProfile(_prev: FormState, formData: FormData): Promi
   const { error } = await supabase
     .from("profiles")
     .upsert({ id: user.id, display_name: name }, { onConflict: "id", ignoreDuplicates: true });
-  if (error) return { error: `Не удалось сохранить: ${error.message}` };
+  if (error) return { error: `Couldn’t save: ${error.message}` };
 
   redirect("/");
 }
 
 export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
   const name = parseName(formData);
-  if (!name) return { error: "Имя должно быть от 1 до 40 символов." };
+  if (!name) return { error: "Name must be 1 to 40 characters." };
 
   const supabase = await createClient();
   const {
@@ -43,7 +43,7 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
     .from("profiles")
     .update({ display_name: name })
     .eq("id", user.id);
-  if (error) return { error: `Не удалось сохранить: ${error.message}` };
+  if (error) return { error: `Couldn’t save: ${error.message}` };
 
   revalidatePath("/", "layout");
   return { ok: true };

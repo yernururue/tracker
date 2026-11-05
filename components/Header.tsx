@@ -23,12 +23,12 @@ export function Header({
     <header className="mb-6 flex items-center justify-between gap-2 sm:mb-8">
       <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
         <Logo />
-        Учёба
+        Study
       </Link>
       <nav className="-mr-1 flex items-center gap-0.5">
         {withInstructions && <InstructionsButton />}
         <Link href="/reports" className={link(current === "reports")} aria-current={current === "reports" ? "page" : undefined}>
-          Репорты
+          Reports
         </Link>
         <Link
           href={`/u/${userId}`}

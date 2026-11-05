@@ -128,7 +128,7 @@ export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; hr
           ) : (
             <span className="truncate font-medium">{f.name}</span>
           )}
-          {me && <span className="shrink-0 text-xs text-muted">вы</span>}
+          {me && <span className="shrink-0 text-xs text-muted">you</span>}
         </span>
         {f.liveSince ? (
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
@@ -136,13 +136,13 @@ export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; hr
             <LiveClock since={f.liveSince} accumulated={f.liveAccumulatedMs} />
           </span>
         ) : (
-          <span className="shrink-0 text-xs text-muted">не учится</span>
+          <span className="shrink-0 text-xs text-muted">not studying</span>
         )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Meter label="Сегодня" minutes={f.todayMin} target={DAY_TARGET_MIN} value={formatMinutes(f.todayMin)} />
-        <Meter label="Неделя" minutes={f.weekMin} target={WEEK_TARGET_MIN} value={`${formatHours(f.weekMin)} ч`} />
+        <Meter label="Today" minutes={f.todayMin} target={DAY_TARGET_MIN} value={formatMinutes(f.todayMin)} />
+        <Meter label="This week" minutes={f.weekMin} target={WEEK_TARGET_MIN} value={`${formatHours(f.weekMin)}h`} />
       </div>
 
       <div className="mt-2 grid grid-cols-2 gap-2">
@@ -150,19 +150,19 @@ export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; hr
           {f.goal ? (
             <>
               <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[f.goal.status]}`} aria-hidden />
-              <span className="truncate">Цель недели</span>
+              <span className="truncate">Weekly goal</span>
             </>
           ) : (
-            "Цели нет"
+            "No goal"
           )}
         </Toggle>
         <Toggle active={open === "report"} disabled={!f.last} onClick={() => toggle("report")} controls={panelId}>
           {f.last ? (
             <>
-              Репорт
+              Report
             </>
           ) : (
-            "Репортов нет"
+            "No reports"
           )}
         </Toggle>
       </div>

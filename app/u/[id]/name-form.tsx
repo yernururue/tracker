@@ -14,15 +14,15 @@ export function NameForm({ name }: { name: string }) {
           defaultValue={name}
           required
           maxLength={40}
-          aria-label="Имя"
+          aria-label="Name"
           className={input}
         />
         <button type="submit" disabled={pending} className={`${btnSecondary} shrink-0`}>
-          {pending ? "…" : "Сохранить"}
+          {pending ? "…" : "Save"}
         </button>
       </div>
       {state.error && <p className="text-sm text-danger">{state.error}</p>}
-      {state.ok && !pending && <p className="text-sm text-muted">Сохранено</p>}
+      {state.ok && !pending && <p className="text-sm text-muted">Saved</p>}
     </form>
   );
 }

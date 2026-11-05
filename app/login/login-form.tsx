@@ -12,9 +12,9 @@ export function LoginForm() {
   if (state.status === "sent") {
     return (
       <div className="mt-6 rounded-xl bg-live-soft p-4">
-        <p className="font-medium text-live-strong">Письмо отправлено</p>
+        <p className="font-medium text-live-strong">Email sent</p>
         <p className="mt-1 text-sm text-muted">
-          Открой ссылку из письма на {state.email}. Если письма нет, проверь спам.
+          Open the link we sent to {state.email}. If it’s not there, check spam.
         </p>
       </div>
     );
@@ -34,7 +34,7 @@ export function LoginForm() {
       />
       {state.status === "error" && <p className="text-sm text-danger">{state.message}</p>}
       <button type="submit" disabled={pending} className={btnPrimary}>
-        {pending ? "Отправляю…" : "Получить ссылку"}
+        {pending ? "Sending…" : "Get link"}
       </button>
     </form>
   );

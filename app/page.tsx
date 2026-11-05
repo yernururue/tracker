@@ -6,14 +6,12 @@ import { InstructionsProvider } from "@/components/Instructions";
 import { Timer } from "@/components/Timer";
 import { WeeklyGoal } from "@/components/WeeklyGoal";
 import { requireProfile } from "@/lib/auth";
-import { demoFriends } from "@/lib/demo";
 import { getInstructions } from "@/lib/instructions";
 import { dayKey, dayStartUtc, weekStartKey } from "@/lib/time";
 import type { ActiveTimer, Profile, Session, WeeklyGoal as Goal } from "@/lib/types";
 
-export default async function Dashboard({ searchParams }: PageProps<"/">) {
+export default async function Dashboard() {
   const { supabase, user, profile } = await requireProfile();
-  const demo = (await searchParams).demo !== undefined;
 
   const now = new Date();
   const nowIso = now.toISOString();
@@ -56,13 +54,12 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
       goal: g ? { text: g.goal_text, status: g.status } : null,
     };
   });
-  if (demo) friends.push(...demoFriends(nowIso));
 
   friends.sort(
     (a, b) =>
       Number(Boolean(b.liveSince)) - Number(Boolean(a.liveSince)) ||
       b.weekMin - a.weekMin ||
-      a.name.localeCompare(b.name, "ru"),
+      a.name.localeCompare(b.name, "en"),
   );
 
   const loadError = [profilesRes, timersRes, weekRes, recentRes, goalsRes].find((r) => r.error)?.error;
@@ -75,7 +72,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
 
         {loadError && (
           <p className="mb-4 rounded-xl border border-danger/25 bg-surface px-4 py-3 text-sm text-danger shadow-card">
-            Не все данные загрузились: {loadError.message}
+            Some data didn’t load: {loadError.message}
           </p>
         )}
 
@@ -85,7 +82,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
             <WeeklyGoal goal={myGoal} userId={user.id} weekStart={weekKey} />
           </div>
 
-          <FriendsPanel friends={friends} meId={user.id} demo={demo} />
+          <FriendsPanel friends={friends} meId={user.id} />
         </div>
       </main>
     </InstructionsProvider>

@@ -44,7 +44,7 @@ export default async function ProfilePage({ params }: PageProps<"/u/[id]">) {
         {isMe && (
           <form action={signOut}>
             <button type="submit" className={`${btnGhost} -mr-3`}>
-              Выйти
+              Sign out
             </button>
           </form>
         )}
@@ -54,12 +54,12 @@ export default async function ProfilePage({ params }: PageProps<"/u/[id]">) {
         <Stats stats={stats} />
         <Heatmap weeks={buildHeatmap(byDay, todayKey)} />
         <Link href={`/reports?tab=doc&u=${profile.id}`} className={`${btnSecondary} self-start`}>
-          Все репорты
+          All reports
         </Link>
 
         {isMe && (
           <section className={`${card} flex flex-col gap-3`}>
-            <span className={label}>Имя</span>
+            <span className={label}>Name</span>
             <NameForm name={profile.display_name} />
             <p className="truncate text-sm text-muted">{user.email}</p>
           </section>

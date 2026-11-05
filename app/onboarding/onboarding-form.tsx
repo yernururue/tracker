@@ -13,12 +13,12 @@ export function OnboardingForm() {
         required
         maxLength={40}
         autoComplete="nickname"
-        placeholder="Имя"
+        placeholder="Name"
         className={input}
       />
       {state.error && <p className="text-sm text-danger">{state.error}</p>}
       <button type="submit" disabled={pending} className={btnPrimary}>
-        {pending ? "Сохраняю…" : "Продолжить"}
+        {pending ? "Saving…" : "Continue"}
       </button>
     </form>
   );

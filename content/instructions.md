@@ -1,27 +1,27 @@
-# Как учиться, а не делать вид
+# How to actually learn, not just look busy
 
-## Часы — это минимум, а не цель
-2 часа в день — это как прийти в зал. Без этого роста точно не будет, но сами часы ничего не доказывают. Два часа видео на ускорении и два часа решения задач выглядят одинаково на таймере.
+## Hours are the minimum, not the goal
+Two hours a day is like showing up at the gym. Without it you won’t grow, but the hours alone prove nothing. Two hours of videos at 2x speed and two hours of solving problems look the same on a timer.
 
-## Настоящая цель — результат за неделю
-В начале недели запиши, что сделаешь к воскресенью. Хорошая цель проверяется артефактом: кодом, решёнными задачами, ссылкой.
+## The real goal is a result by the end of the week
+At the start of the week, write down what you’ll have done by Sunday. A good goal can be checked with an artifact: code, solved problems, a link.
 
-Плохо: «изучить горутины».
-Хорошо: «написать worker pool, который параллельно качает 20 URL, с остановкой через context».
+Bad: “learn goroutines”.
+Good: “write a worker pool that downloads 20 URLs in parallel and stops via context”.
 
-Плохо: «подтянуть алгоритмы».
-Хорошо: «решить 10 задач на two pointers, из них 3 без подсказок».
+Bad: “get better at algorithms”.
+Good: “solve 10 two-pointer problems, 3 of them without hints”.
 
-Проверь себя: как ты в воскресенье докажешь, что сделал это? Если доказать нечем, переформулируй цель.
+Check yourself: how will you prove on Sunday that you did it? If there’s nothing to prove it with, rewrite the goal.
 
-## Практика важнее потребления
-Видео, статьи и перепечатывание кода из туториала ощущаются как учёба, но навык почти не растут. Правило: на каждый час потребления — минимум час, когда пишешь сам без подсказки.
+## Practice beats consumption
+Videos, articles and retyping code from a tutorial feel like learning, but they barely build skill. Rule: for every hour of consuming, spend at least an hour writing on your own, without hints.
 
-## Хороший день — это день, когда ты застрял
-Если за день ты ни разу не упёрся в проблему и не разобрался сам, скорее всего, было слишком легко. Застрять — нормально. Это и есть момент, когда ты учишься.
+## A good day is a day you got stuck
+If you didn’t hit a single problem today and work it out yourself, it was probably too easy. Getting stuck is normal. That’s the moment you’re actually learning.
 
-## Как писать репорт
-Пиши конкретно: что сделал, где застрял, что понял. Если не можешь объяснить новую вещь своими словами, значит, ты её прочитал, но ещё не понял.
+## How to write a report
+Be specific: what you did, where you got stuck, what you understood. If you can’t explain a new thing in your own words, you’ve read it but don’t understand it yet.
 
-Плохо: «изучал Go, было продуктивно».
-Хорошо: «сделал worker pool (ссылка). Словил deadlock: забыл закрыть канал, и range висел вечно. Понял: канал закрывает отправитель, тогда range по нему завершается».
+Bad: “studied Go, was productive”.
+Good: “built a worker pool (link). Hit a deadlock: forgot to close the channel, so range hung forever. Learned: the sender closes the channel, and then range over it ends”.

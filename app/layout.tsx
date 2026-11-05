@@ -8,8 +8,8 @@ const onest = Onest({
 });
 
 export const metadata: Metadata = {
-  title: "Учёба",
-  description: "Трекер учебного времени для друзей",
+  title: "Study",
+  description: "Study time tracker for friends",
 };
 
 export const viewport: Viewport = {
@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className={`${onest.variable} antialiased`}>
+    <html lang="en" className={`${onest.variable} antialiased`}>
       <body className="min-h-dvh bg-bg font-sans text-ink">{children}</body>
     </html>
   );

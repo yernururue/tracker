@@ -10,12 +10,12 @@ const LEVEL_BG = [
   "bg-[var(--heat-4)]",
 ];
 
-const DAY_LABELS = ["Пн", "", "Ср", "", "Пт", "", ""];
+const DAY_LABELS = ["Mon", "", "Wed", "", "Fri", "", ""];
 
 export function Heatmap({ weeks }: { weeks: HeatCell[][] }) {
   return (
     <section className={card}>
-      <span className={label}>16 недель</span>
+      <span className={label}>16 weeks</span>
       <div className="mt-4 grid grid-flow-col grid-cols-[auto_repeat(16,minmax(0,1fr))] grid-rows-7 gap-[3px]">
         {DAY_LABELS.map((d, i) => (
           <span key={`l${i}`} className="flex items-center pr-1.5 text-[10px] leading-none text-muted">
@@ -25,7 +25,7 @@ export function Heatmap({ weeks }: { weeks: HeatCell[][] }) {
         {weeks.flat().map((c) => (
           <div
             key={c.key}
-            title={c.future ? undefined : `${formatDayKey(c.key)}: ${c.minutes ? formatMinutes(c.minutes) : "нет"}`}
+            title={c.future ? undefined : `${formatDayKey(c.key)}: ${c.minutes ? formatMinutes(c.minutes) : "none"}`}
             className={`aspect-square rounded-[3px] ${c.future ? "bg-transparent" : LEVEL_BG[c.level]}`}
           />
         ))}
@@ -35,7 +35,7 @@ export function Heatmap({ weeks }: { weeks: HeatCell[][] }) {
         {LEVEL_BG.map((bg, i) => (
           <span key={i} className={`size-2.5 rounded-[2px] ${bg}`} />
         ))}
-        <span>2ч+</span>
+        <span>2h+</span>
       </div>
     </section>
   );

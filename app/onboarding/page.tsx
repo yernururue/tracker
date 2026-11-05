@@ -18,8 +18,8 @@ export default async function OnboardingPage() {
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-4 py-12">
       <div className={`${card} sm:p-8`}>
         <Logo size={40} />
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Как тебя зовут?</h1>
-        <p className="mt-1.5 text-muted">Это имя увидят друзья в рейтинге и ленте.</p>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight">What’s your name?</h1>
+        <p className="mt-1.5 text-muted">Your friends will see this name on the dashboard.</p>
         <OnboardingForm />
       </div>
     </main>

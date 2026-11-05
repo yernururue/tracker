@@ -5,10 +5,10 @@ export type ReportSession = Pick<Session, "id" | "user_id" | "started_at" | "end
 
 export type Range = "7" | "14" | "30" | "all";
 export const RANGES: { value: Range; label: string }[] = [
-  { value: "7", label: "7 дней" },
-  { value: "14", label: "14 дней" },
-  { value: "30", label: "30 дней" },
-  { value: "all", label: "Всё время" },
+  { value: "7", label: "7 days" },
+  { value: "14", label: "14 days" },
+  { value: "30", label: "30 days" },
+  { value: "all", label: "All time" },
 ];
 
 export function parseRange(v: unknown): Range {
@@ -25,7 +25,7 @@ export type DayGroup = { key: string; people: PersonDay[] };
 export type PersonWeek = { profile: Profile; goal: WeeklyGoal | null; minutes: number };
 export type WeekGroup = { weekStart: string; people: PersonWeek[]; days: DayGroup[] };
 
-const byName = (a: Profile, b: Profile) => a.display_name.localeCompare(b.display_name, "ru");
+const byName = (a: Profile, b: Profile) => a.display_name.localeCompare(b.display_name, "en");
 
 /** Newest week first → newest day first → person (by name) → sessions oldest first. */
 export function groupReports(profiles: Profile[], sessions: ReportSession[], goals: WeeklyGoal[]): WeekGroup[] {
@@ -78,11 +78,12 @@ export function groupByPerson(list: ReportSession[], profileById: Map<string, Pr
     .sort((a, b) => byName(a.profile, b.profile));
 }
 
-const monthDay = new Intl.DateTimeFormat("ru-RU", { timeZone: "UTC", day: "numeric", month: "long" });
+const monthDay = new Intl.DateTimeFormat("en-GB", { timeZone: "UTC", day: "numeric", month: "long" });
+/** "3–9 November", or "27 October – 2 November" across months. */
 export function formatWeekRange(weekStart: string): string {
   const a = new Date(`${weekStart}T00:00:00Z`);
   const b = new Date(`${addDays(weekStart, 6)}T00:00:00Z`);
-  return `${monthDay.format(a)} – ${monthDay.format(b)}`;
+  return monthDay.formatRange(a, b);
 }
 
 function indent(text: string): string {
@@ -94,14 +95,14 @@ function indent(text: string): string {
 }
 
 export function reportsToMarkdown(weeks: WeekGroup[], title: string): string {
-  const out: string[] = [`# ${title}`, "", "Часовой пояс: Asia/Almaty.", ""];
-  if (weeks.length === 0) out.push("_Нет репортов за период._", "");
+  const out: string[] = [`# ${title}`, "", "Time zone: Asia/Almaty.", ""];
+  if (weeks.length === 0) out.push("_No reports for this period._", "");
 
   for (const w of weeks) {
-    out.push(`## Неделя ${formatWeekRange(w.weekStart)}`, "");
+    out.push(`## Week of ${formatWeekRange(w.weekStart)}`, "");
     for (const p of w.people) {
-      const goal = p.goal ? `«${p.goal.goal_text.trim()}» — ${GOAL_STATUS_LABEL[p.goal.status].toLowerCase()}` : "не задана";
-      out.push(`- **${p.profile.display_name}**: ${formatMinutes(p.minutes)}. Цель: ${goal}`);
+      const goal = p.goal ? `"${p.goal.goal_text.trim()}" (${GOAL_STATUS_LABEL[p.goal.status].toLowerCase()})` : "not set";
+      out.push(`- **${p.profile.display_name}**: ${formatMinutes(p.minutes)}. Goal: ${goal}`);
     }
     out.push("");
     for (const d of w.days) {

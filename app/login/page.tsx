@@ -3,8 +3,8 @@ import { card } from "@/components/ui";
 import { LoginForm } from "./login-form";
 
 const ERRORS: Record<string, string> = {
-  not_allowed: "Этого email нет в списке участников.",
-  link: "Ссылка недействительна или устарела. Запроси новую.",
+  not_allowed: "This email isn’t on the member list.",
+  link: "The link is invalid or has expired. Request a new one.",
 };
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
@@ -15,8 +15,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-4 py-12">
       <div className={`${card} sm:p-8`}>
         <Logo size={40} />
-        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Учёба</h1>
-        <p className="mt-1.5 text-muted">Вход по ссылке на почту. Пароль не нужен.</p>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight">Study</h1>
+        <p className="mt-1.5 text-muted">Sign in with a link sent to your email. No password needed.</p>
         {message && (
           <p className="mt-6 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">{message}</p>
         )}
