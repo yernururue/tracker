@@ -14,6 +14,7 @@ export function demoFriends(nowIso: string): FriendCardData[] {
       liveSince: ago(42),
       liveAccumulatedMs: 0,
       last: { startedAt: ago(300), minutes: 55, report: "Линейная алгебра: собственные векторы, решила 12 задач из Стрэнга." },
+      goal: { text: "Решить 25 задач из Стрэнга по главе 6 и написать конспект с выводом SVD своими словами.", status: "pending" },
     },
     {
       id: "demo-2",
@@ -23,6 +24,7 @@ export function demoFriends(nowIso: string): FriendCardData[] {
       liveSince: null,
       liveAccumulatedMs: 0,
       last: { startedAt: ago(1500), minutes: 70, report: "LeetCode: 3 медиума на графы, один не добил — разобрал решение." },
+      goal: null,
     },
   ];
 }
