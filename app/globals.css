@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #fbf8f2;
+  --bg: #f2ddc6;
   --surface: #ffffff;
-  --surface-2: #f5f1e9;
-  --line: #ede7dc;
-  --ink: #2b2620;
-  --muted: #8b8072;
-  --accent: #a8644a;
+  --surface-2: #f8efe5;
+  --line: #ead8c3;
+  --ink: #2e241b;
+  --muted: #86705b;
+  --accent: #a35d3d;
   --accent-ink: #fffaf3;
-  --live: #5b9461;
+  --live: #4f8a56;
   --danger: #b4483a;
+  --p1: var(--accent);
+  --p2: #5f8a66;
+  --p3: #5d76a0;
+  --p4: #9a6a9e;
   --heat-0: var(--surface-2);
   --heat-1: color-mix(in srgb, var(--accent) 25%, var(--surface));
   --heat-2: color-mix(in srgb, var(--accent) 48%, var(--surface));
