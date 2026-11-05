@@ -2,40 +2,55 @@
 
 import { useActionState, useState, type ReactNode } from "react";
 import { btnGhost, btnPrimary, input } from "@/components/ui";
-import { sendMagicLink, signInWithPassword, type LoginState } from "./actions";
+import { sendMagicLink, signInWithPassword, signUp, type LoginState } from "./actions";
+
+type Mode = "signin" | "signup" | "link";
 
 const initial: LoginState = { status: "idle" };
 
-export function LoginForm({ notice, initialMode = "password" }: { notice?: ReactNode; initialMode?: "password" | "link" }) {
+const COPY: Record<Mode, { intro: string; submit: string; pending: string }> = {
+  signin: { intro: "Sign in with your email and password.", submit: "Sign in", pending: "Signing in…" },
+  signup: {
+    intro: "Create an account with your email and a password. The email must be on the member list.",
+    submit: "Create account",
+    pending: "Creating…",
+  },
+  link: { intro: "Forgot your password? We’ll email you a sign-in link.", submit: "Email me a link", pending: "Sending…" },
+};
+
+export function LoginForm({ notice, initialMode = "signin" }: { notice?: ReactNode; initialMode?: Mode }) {
   const [mode, setMode] = useState(initialMode);
   const [email, setEmail] = useState("");
-  const [pwState, pwAction, pwPending] = useActionState(signInWithPassword, initial);
-  const [linkState, linkAction, linkPending] = useActionState(sendMagicLink, initial);
+  const forms = {
+    signin: useActionState(signInWithPassword, initial),
+    signup: useActionState(signUp, initial),
+    link: useActionState(sendMagicLink, initial),
+  };
+  const [state, action, pending] = forms[mode];
 
-  if (linkState.status === "sent") {
+  if (state.status === "sent") {
     return (
       <div className="mt-6 rounded-xl bg-live-soft p-4">
         <p className="font-medium text-live-strong">Email sent</p>
         <p className="mt-1 text-sm text-muted">
-          Open the link we sent to {linkState.email} in this browser. If it’s not there, check spam.
+          Open the link we sent to {state.email} in this browser. If it’s not there, check spam.
         </p>
       </div>
     );
   }
 
-  const isLink = mode === "link";
-  const state = isLink ? linkState : pwState;
-  const pending = isLink ? linkPending : pwPending;
+  const copy = COPY[mode];
+  const switchTo = (next: Mode, text: string) => (
+    <button type="button" onClick={() => setMode(next)} className={`${btnGhost} w-full`}>
+      {text}
+    </button>
+  );
 
   return (
     <>
-      <p className="mt-1.5 text-muted">
-        {isLink
-          ? "We’ll email you a sign-in link. Use it the first time, or if you forgot your password."
-          : "Sign in with your email and password."}
-      </p>
+      <p className="mt-1.5 text-muted">{copy.intro}</p>
       {notice}
-      <form action={isLink ? linkAction : pwAction} className="mt-6 flex flex-col gap-3">
+      <form action={action} className="mt-6 flex flex-col gap-3">
         <input
           name="email"
           type="email"
@@ -47,24 +62,34 @@ export function LoginForm({ notice, initialMode = "password" }: { notice?: React
           onChange={(e) => setEmail(e.target.value)}
           className={input}
         />
-        {!isLink && (
+        {mode !== "link" && (
           <input
+            key={mode}
             name="password"
             type="password"
-            autoComplete="current-password"
             required
-            placeholder="Password"
+            minLength={mode === "signup" ? 8 : undefined}
+            maxLength={72}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            placeholder={mode === "signup" ? "Password, 8+ characters" : "Password"}
             className={input}
           />
         )}
         {state.status === "error" && <p className="text-sm text-danger">{state.message}</p>}
         <button type="submit" disabled={pending} className={btnPrimary}>
-          {isLink ? (pending ? "Sending…" : "Email me a link") : pending ? "Signing in…" : "Sign in"}
+          {pending ? copy.pending : copy.submit}
         </button>
       </form>
-      <button type="button" onClick={() => setMode(isLink ? "password" : "link")} className={`${btnGhost} mt-2 w-full`}>
-        {isLink ? "Sign in with password" : "First time or forgot password? Get an email link"}
-      </button>
+      <div className="mt-2 flex flex-col">
+        {mode === "signin" ? (
+          <>
+            {switchTo("signup", "New here? Create an account")}
+            {switchTo("link", "Forgot password?")}
+          </>
+        ) : (
+          switchTo("signin", "Back to sign in")
+        )}
+      </div>
     </>
   );
 }

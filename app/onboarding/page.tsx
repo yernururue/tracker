@@ -13,6 +13,8 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
   if (profile) redirect("/");
+  // Accounts created with a password skip this; ones from an email link set it here.
+  const needsPassword = !user.user_metadata?.has_password;
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-4 py-12">
@@ -20,9 +22,10 @@ export default async function OnboardingPage() {
         <Logo size={40} />
         <h1 className="mt-5 text-2xl font-semibold tracking-tight">Set up your profile</h1>
         <p className="mt-1.5 text-muted">
-          Friends see your name on the dashboard. With a password you won’t need an email link next time.
+          Friends see your name on the dashboard.
+          {needsPassword && " With a password you won’t need an email link next time."}
         </p>
-        <OnboardingForm email={user.email ?? ""} />
+        <OnboardingForm email={user.email ?? ""} needsPassword={needsPassword} />
       </div>
     </main>
   );

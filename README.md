@@ -8,7 +8,7 @@
 
 1. Создай проект на [supabase.com](https://supabase.com).
 2. **SQL Editor → New query**: вставь содержимое [`supabase/schema.sql`](supabase/schema.sql) и нажми Run. Скрипт можно запускать повторно: после обновлений просто прогони его ещё раз.
-3. **Authentication → Sign In / Providers → Email**: email-провайдер включён по умолчанию. Первый вход идёт по magic link, при онбординге человек задаёт пароль, дальше входит по email и паролю. Забыл пароль: снова вход по ссылке и новый пароль в профиле.
+3. **Authentication → Sign In / Providers → Email**: email-провайдер включён по умолчанию. **Выключи Confirm email**: тогда регистрация на сайте (email + пароль) проходит сразу, без письма. Письма уходят только при «Forgot password?»: это вход по ссылке, после которого новый пароль задаётся в профиле. Встроенная почта Supabase отправляет всего 2 письма в час на проект.
 4. **Authentication → URL Configuration**:
    - **Site URL**: `https://<твой-домен>.vercel.app`
    - **Redirect URLs**: добавь `https://<твой-домен>.vercel.app/auth/confirm` и для локальной разработки `http://localhost:3000/auth/confirm`

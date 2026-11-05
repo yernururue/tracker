@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <Logo size={40} />
         <h1 className="mt-5 text-2xl font-semibold tracking-tight">Study</h1>
         <LoginForm
-          initialMode={error === "link" ? "link" : "password"}
+          initialMode={error === "link" ? "link" : "signin"}
           notice={
             message && (
               <p className="mt-6 rounded-xl border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger">
