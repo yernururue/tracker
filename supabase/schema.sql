@@ -31,6 +31,16 @@ create index if not exists sessions_user_started_idx on public.sessions (user_id
 create index if not exists sessions_started_idx on public.sessions (started_at desc);
 create index if not exists sessions_created_idx on public.sessions (created_at desc);
 
+-- All-time minutes per user (security_invoker so RLS of sessions applies).
+create or replace view public.user_totals
+with (security_invoker = true) as
+  select user_id, sum(minutes)::bigint as total_minutes
+  from public.sessions
+  group by user_id;
+
+grant select on public.user_totals to authenticated;
+revoke select on public.user_totals from anon;
+
 -- ============ Row Level Security ============
 -- Everyone signed in can read everything; each user writes only their own rows.
 
