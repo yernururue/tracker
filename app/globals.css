@@ -13,6 +13,10 @@
   --accent-hover: #152b47;
   --accent-ink: #ffffff;
   --accent-soft: #e6ecf5;
+  --timer-idle: color-mix(in srgb, var(--ink) 25%, transparent);
+  --timer-start: var(--accent);
+  --timer-start-hover: var(--accent-hover);
+  --timer-start-ink: var(--accent-ink);
   --live: #3f7d48;
   --live-strong: #346b3c;
   --live-soft: #e6f1e3;
@@ -54,6 +58,10 @@
   --accent-hover: #d0d2ff;
   --accent-ink: #17192c;
   --accent-soft: #202338;
+  --timer-idle: #7e8391;
+  --timer-start: #5e668f;
+  --timer-start-hover: #626b94;
+  --timer-start-ink: #f0f1fa;
   --live: #a0c9a4;
   --live-strong: #b5dfb8;
   --live-soft: #223a30;
@@ -89,6 +97,10 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-timer-idle: var(--timer-idle);
+  --color-timer-start: var(--timer-start);
+  --color-timer-start-hover: var(--timer-start-hover);
+  --color-timer-start-ink: var(--timer-start-ink);
   --color-live: var(--live);
   --color-live-strong: var(--live-strong);
   --color-live-soft: var(--live-soft);

@@ -237,7 +237,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
 
       <p
         className={`mt-7 text-center text-[2.75rem] font-semibold leading-none tabular-nums tracking-tight sm:text-5xl lg:text-6xl ${
-          state === "idle" ? "text-ink/25" : ""
+          state === "idle" ? "text-timer-idle" : ""
         }`}
       >
         <RollingText text={formatClock(elapsed)} />
@@ -251,7 +251,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
 
       <div className="mt-7 flex gap-3">
         {state === "idle" && (
-          <button onClick={start} className={`${btnPrimary} flex-1`}>
+          <button onClick={start} className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-timer-start px-6 font-medium text-timer-start-ink shadow-button transition-colors hover:bg-timer-start-hover">
             Start
           </button>
         )}
