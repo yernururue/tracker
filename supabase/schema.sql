@@ -33,8 +33,7 @@ create table if not exists public.weekly_goals (
   goal_text text not null check (char_length(btrim(goal_text)) between 1 and 500),
   status text not null default 'pending' check (status in ('pending', 'done', 'partial', 'missed')),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (user_id, week_start)
+  updated_at timestamptz not null default now()
 );
 
 create or replace function public.touch_updated_at()
@@ -51,6 +50,10 @@ $$;
 drop trigger if exists weekly_goals_touch on public.weekly_goals;
 create trigger weekly_goals_touch before update on public.weekly_goals
   for each row execute function public.touch_updated_at();
+
+-- For an existing one-goal schema, run supabase/migrations/20261106_individual_weekly_goals.sql.
+create index if not exists weekly_goals_user_week_created_idx
+  on public.weekly_goals (user_id, week_start, created_at, id);
 
 create index if not exists sessions_user_started_idx on public.sessions (user_id, started_at desc);
 create index if not exists sessions_started_idx on public.sessions (started_at desc);
