@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Onest } from "next/font/google";
+import { NightSky } from "@/components/NightSky";
 import { THEME_COLORS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -30,7 +31,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
         />
       </head>
-      <body className="min-h-dvh bg-bg font-sans text-ink">{children}</body>
+      <body className="min-h-dvh bg-bg font-sans text-ink">
+        <NightSky />
+        {children}
+      </body>
     </html>
   );
 }
