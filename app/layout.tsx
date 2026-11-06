@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { NightSky } from "@/components/NightSky";
+import { PixelSky } from "@/components/PixelSky";
 import { THEME_COLORS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-dvh bg-bg font-sans text-ink">
-        <NightSky />
+        <PixelSky />
         {children}
       </body>
     </html>

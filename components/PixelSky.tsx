@@ -12,7 +12,7 @@ type Star = {
   hiddenUntil: number;
 };
 
-const SKY_COLORS = [
+const NIGHT_SKY_COLORS = [
   [5, 6, 13],
   [7, 8, 17],
   [9, 10, 21],
@@ -22,12 +22,22 @@ const SKY_COLORS = [
   [22, 20, 38],
 ];
 
+const DAY_SKY_COLORS = [
+  [222, 235, 247],
+  [230, 237, 245],
+  [238, 239, 240],
+  [247, 241, 232],
+  [253, 244, 227],
+  [251, 234, 215],
+  [247, 225, 203],
+];
+
 const DITHER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const PIXEL_SIZE = 2;
 const FRAME_INTERVAL = 1000 / 12;
 
 /** A decorative sky that never takes pointer events away from the app. */
-export function NightSky() {
+export function PixelSky() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -67,15 +77,16 @@ export function NightSky() {
       background.width = Math.max(1, Math.ceil(width / 3));
       background.height = Math.max(1, Math.ceil(height / 3));
       const pixels = backgroundContext!.createImageData(background.width, background.height);
+      const colors = dark ? NIGHT_SKY_COLORS : DAY_SKY_COLORS;
 
       for (let y = 0; y < background.height; y += 1) {
-        const level = (y / Math.max(1, background.height - 1)) * (SKY_COLORS.length - 1);
+        const level = (y / Math.max(1, background.height - 1)) * (colors.length - 1);
         const lower = Math.floor(level);
         const fraction = level - lower;
 
         for (let x = 0; x < background.width; x += 1) {
           const threshold = (DITHER[(y % 4) * 4 + (x % 4)] + 0.5) / 16;
-          const color = SKY_COLORS[Math.min(lower + Number(fraction > threshold), SKY_COLORS.length - 1)];
+          const color = colors[Math.min(lower + Number(fraction > threshold), colors.length - 1)];
           const offset = (y * background.width + x) * 4;
           pixels.data[offset] = color[0];
           pixels.data[offset + 1] = color[1];
@@ -90,6 +101,7 @@ export function NightSky() {
     function draw(now: number) {
       context!.globalAlpha = 1;
       context!.drawImage(background, 0, 0, width, height);
+      if (!dark) return;
 
       for (const star of stars) {
         if (now < star.hiddenUntil) continue;
@@ -128,11 +140,10 @@ export function NightSky() {
     function syncPlayback() {
       window.cancelAnimationFrame(frameId);
       frameId = 0;
-      dark = document.documentElement.dataset.theme === "dark";
-
-      if (!dark) {
-        context!.clearRect(0, 0, width, height);
-        return;
+      const nextDark = document.documentElement.dataset.theme === "dark";
+      if (dark !== nextDark) {
+        dark = nextDark;
+        paintBackground();
       }
       if (document.visibilityState !== "visible") return;
 
@@ -141,7 +152,8 @@ export function NightSky() {
       }
       lastFrame = performance.now();
       draw(lastFrame);
-      if (!motionPreference.matches) {
+      // Daylight is static; only the night stars need an animation loop.
+      if (dark && !motionPreference.matches) {
         frameId = window.requestAnimationFrame(animate);
       }
     }
@@ -154,6 +166,7 @@ export function NightSky() {
       canvas!.height = Math.ceil(height * pixelRatio);
       context!.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       context!.imageSmoothingEnabled = false;
+      dark = document.documentElement.dataset.theme === "dark";
       paintBackground();
 
       const starCount = Math.max(36, Math.min(130, Math.round((width * height) / 3600)));
@@ -223,5 +236,5 @@ export function NightSky() {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="night-sky" aria-hidden="true" />;
+  return <canvas ref={canvasRef} className="pixel-sky" aria-hidden="true" />;
 }
