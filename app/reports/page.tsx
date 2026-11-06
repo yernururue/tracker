@@ -295,16 +295,19 @@ async function Doc({ supabase, params, profiles }: { supabase: SupabaseClient; p
                 <li key={p.profile.id} className="leading-relaxed">
                   <span className="font-medium">{p.profile.display_name}</span>
                   <span className="text-muted"> · {formatHours(p.minutes)}h</span>
-                  <br />
-                  {p.goal ? (
-                    <>
-                      <span className="text-ink/80">Goal: {p.goal.goal_text}</span>{" "}
-                      <span className={`text-sm ${STATUS_CLASS[p.goal.status]}`}>
-                        ({GOAL_STATUS_LABEL[p.goal.status].toLowerCase()})
-                      </span>
-                    </>
+                  {p.goals.length > 0 ? (
+                    <ol className="mt-1 list-decimal space-y-1 pl-5 marker:text-muted" aria-label={`Weekly goals for ${p.profile.display_name}`}>
+                      {p.goals.map((goal) => (
+                        <li key={goal.id} className="pl-1">
+                          <span className="whitespace-pre-wrap break-words text-ink/80">{goal.goal_text}</span>{" "}
+                          <span className={`text-sm ${STATUS_CLASS[goal.status]}`}>
+                            ({GOAL_STATUS_LABEL[goal.status].toLowerCase()})
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
                   ) : (
-                    <span className="text-sm text-muted">No goal set</span>
+                    <p className="text-sm text-muted">No goals set</p>
                   )}
                 </li>
               ))}

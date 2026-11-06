@@ -83,7 +83,7 @@ export function DashboardLive({ initial, userId }: { initial: DashboardSnapshot;
       <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start md:gap-8">
         <div className="flex flex-col gap-4 md:sticky md:top-8">
           <Timer initialTimer={snapshot.timer} serverNow={snapshot.serverNow} />
-          <WeeklyGoal goal={snapshot.goal} userId={userId} weekStart={snapshot.weekStart} />
+          <WeeklyGoal key={`${userId}:${snapshot.weekStart}`} goals={snapshot.goals} userId={userId} weekStart={snapshot.weekStart} />
         </div>
         <FriendsPanel friends={snapshot.friends} meId={userId} serverNow={snapshot.serverNow} />
       </div>

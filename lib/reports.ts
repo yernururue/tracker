@@ -22,7 +22,7 @@ export function rangeFromKey(range: Range, todayKey: string): string | null {
 
 export type PersonDay = { profile: Profile; sessions: ReportSession[]; minutes: number };
 export type DayGroup = { key: string; people: PersonDay[] };
-export type PersonWeek = { profile: Profile; goal: WeeklyGoal | null; minutes: number };
+export type PersonWeek = { profile: Profile; goals: WeeklyGoal[]; minutes: number };
 export type WeekGroup = { weekStart: string; people: PersonWeek[]; days: DayGroup[] };
 
 const byName = (a: Profile, b: Profile) => a.display_name.localeCompare(b.display_name, "en");
@@ -48,7 +48,7 @@ export function groupReports(profiles: Profile[], sessions: ReportSession[], goa
         .sort(byName)
         .map((profile) => ({
           profile,
-          goal: w.goals.find((g) => g.user_id === profile.id) ?? null,
+          goals: w.goals.filter((g) => g.user_id === profile.id),
           minutes: w.sessions.filter((s) => s.user_id === profile.id).reduce((t, s) => t + s.minutes, 0),
         }));
 
@@ -101,8 +101,11 @@ export function reportsToMarkdown(weeks: WeekGroup[], title: string): string {
   for (const w of weeks) {
     out.push(`## Week of ${formatWeekRange(w.weekStart)}`, "");
     for (const p of w.people) {
-      const goal = p.goal ? `"${p.goal.goal_text.trim()}" (${GOAL_STATUS_LABEL[p.goal.status].toLowerCase()})` : "not set";
-      out.push(`- **${p.profile.display_name}**: ${formatMinutes(p.minutes)}. Goal: ${goal}`);
+      out.push(`- **${p.profile.display_name}**: ${formatMinutes(p.minutes)}.${p.goals.length === 0 ? " Goals: not set" : " Goals:"}`);
+      for (const [index, goal] of p.goals.entries()) {
+        const goalText = goal.goal_text.trim().replace(/\r?\n/g, "\n     ");
+        out.push(`  ${index + 1}. ${goalText} (${GOAL_STATUS_LABEL[goal.status].toLowerCase()})`);
+      }
     }
     out.push("");
     for (const d of w.days) {

@@ -18,7 +18,7 @@ export type FriendCardData = {
   liveStartedAt: string | null;
   liveAccumulatedMs: number;
   last: { startedAt: string; minutes: number; report: string } | null;
-  goal: { text: string; status: GoalStatus } | null;
+  goals: { id: string; text: string; status: GoalStatus }[];
 };
 
 const STATUS_DOT: Record<GoalStatus, string> = {
@@ -124,6 +124,7 @@ export function FriendCard({ f, me, href, serverNow }: { f: FriendCardData; me: 
   const detailsId = useId();
   const detailsButton = useRef<HTMLButtonElement>(null);
   const detailsVisible = hovered || manualOpen || detailsFocused;
+  const doneGoals = f.goals.filter((goal) => goal.status === "done").length;
 
   const toggleDetails = () => {
     const next = !detailsVisible;
@@ -238,14 +239,12 @@ export function FriendCard({ f, me, href, serverNow }: { f: FriendCardData; me: 
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <Toggle active={open === "goal"} disabled={!f.goal} onClick={() => toggle("goal")} controls={panelId}>
-                {f.goal ? (
-                  <>
-                    <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[f.goal.status]}`} aria-hidden />
-                    <span className="truncate">Weekly goal</span>
-                  </>
-                ) : (
-                  "No goal"
+              <Toggle active={open === "goal"} disabled={f.goals.length === 0} onClick={() => toggle("goal")} controls={panelId}>
+                <span className="truncate">Weekly goals</span>
+                {f.goals.length > 0 && (
+                  <span className="shrink-0 text-xs text-muted" aria-label={`${doneGoals} of ${f.goals.length} goals done`}>
+                    {doneGoals}/{f.goals.length}
+                  </span>
                 )}
               </Toggle>
               <Toggle active={open === "report"} disabled={!f.last} onClick={() => toggle("report")} controls={panelId}>
@@ -266,11 +265,18 @@ export function FriendCard({ f, me, href, serverNow }: { f: FriendCardData; me: 
             >
               <div className="overflow-hidden">
                 <div className="mt-3 rounded-xl bg-surface-2 px-4 py-3 text-sm leading-relaxed ring-1 ring-inset ring-line/70">
-                  {shown === "goal" && f.goal && (
-                    <>
-                      <p className={`mb-1 text-xs font-medium ${STATUS_TEXT[f.goal.status]}`}>{GOAL_STATUS_LABEL[f.goal.status]}</p>
-                      <p className="whitespace-pre-wrap break-words">{f.goal.text}</p>
-                    </>
+                  {shown === "goal" && f.goals.length > 0 && (
+                    <ol className="list-decimal space-y-3 pl-4 marker:text-muted">
+                      {f.goals.map((goal) => (
+                        <li key={goal.id} className="pl-1">
+                          <p className={`mb-1 flex items-center gap-1.5 text-xs font-medium ${STATUS_TEXT[goal.status]}`}>
+                            <span className={`size-1.5 shrink-0 rounded-full ${STATUS_DOT[goal.status]}`} aria-hidden />
+                            {GOAL_STATUS_LABEL[goal.status]}
+                          </p>
+                          <p className="whitespace-pre-wrap break-words">{goal.text}</p>
+                        </li>
+                      ))}
+                    </ol>
                   )}
                   {shown === "report" && f.last && (
                     <>
