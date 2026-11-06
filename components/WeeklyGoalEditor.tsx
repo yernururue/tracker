@@ -30,6 +30,7 @@ const ICON_PATH = {
 
 const iconButton = "inline-grid size-8 shrink-0 place-items-center rounded-md transition-colors disabled:opacity-40";
 const row = "min-w-0 rounded-lg border border-line bg-surface-2 p-3";
+const confirmButton = "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-sm transition-colors disabled:opacity-40";
 
 function Icon({ name }: { name: keyof typeof ICON_PATH }) {
   return (
@@ -56,6 +57,7 @@ export function WeeklyGoalEditor({
   const [goals, setGoals] = useState(initial);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [change, setChange] = useState<Change | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const writing = useRef(false);
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -63,6 +65,8 @@ export function WeeklyGoalEditor({
   const addId = `${idPrefix}-add`;
   const editId = (id: string) => `${idPrefix}-edit-${id}`;
   const statusId = (id: string, status: "done" | "missed") => `${idPrefix}-${status}-${id}`;
+  const deleteId = (id: string) => `${idPrefix}-delete-${id}`;
+  const cancelDeleteId = (id: string) => `${idPrefix}-cancel-delete-${id}`;
 
   if (initial !== previousInitial) {
     setPreviousInitial(initial);
@@ -82,7 +86,7 @@ export function WeeklyGoalEditor({
     const target = document.getElementById(focusAfter.current) ?? document.getElementById(addId);
     focusAfter.current = null;
     target?.focus();
-  }, [addId, busy, draftTarget, goals]);
+  }, [addId, busy, confirmingDelete, draftTarget, goals]);
 
   // Keep optimistic changes separate so a failed write shows the latest server list again.
   const visibleGoals = change?.kind === "delete"
@@ -116,6 +120,7 @@ export function WeeklyGoalEditor({
   function openEditor(goal?: Goal) {
     if (disableRowActions || writing.current) return;
     setError(null);
+    setConfirmingDelete(null);
     setDraft({ id: goal?.id ?? null, text: goal?.goal_text ?? "" });
   }
 
@@ -144,9 +149,21 @@ export function WeeklyGoalEditor({
     }, "Couldn’t update the goal. Try again.");
   }
 
+  function askDelete(goal: Goal) {
+    setError(null);
+    focusAfter.current = cancelDeleteId(goal.id);
+    setConfirmingDelete(goal.id);
+  }
+
+  function cancelDelete(goal: Goal) {
+    focusAfter.current = deleteId(goal.id);
+    setConfirmingDelete(null);
+  }
+
   function remove(goal: Goal, index: number) {
     const neighbor = visibleGoals[index + 1] ?? visibleGoals[index - 1];
     focusAfter.current = neighbor ? editId(neighbor.id) : addId;
+    setConfirmingDelete(null);
     void write({ kind: "delete", id: goal.id }, async () => {
       await onDelete(goal.id);
       setGoals((current) => current.filter((item) => item.id !== goal.id));
@@ -217,20 +234,32 @@ export function WeeklyGoalEditor({
                         <Icon name="edit" />
                       </button>
                     </div>
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-x-2">
-                      <span className={`text-xs ${STATUS_COLOR[goal.status]}`}>{GOAL_STATUS_LABEL[goal.status]}</span>
-                      <div className="ml-auto flex items-center gap-1">
-                        <button id={statusId(goal.id, "done")} type="button" disabled={disableRowActions} onClick={() => toggleStatus(goal, "done")} aria-pressed={done} aria-label={`Mark goal ${number} done`} title={done ? "Undo done" : "Mark done"} className={`${iconButton} ${done ? "bg-live-soft text-live-strong" : "text-muted hover:bg-surface hover:text-live-strong"}`}>
-                          <Icon name="done" />
+                    {confirmingDelete === goal.id ? (
+                      <div role="group" aria-label={`Confirm deleting goal ${number}`} className="mt-1 flex flex-wrap items-center gap-x-1">
+                        <span className="mr-auto text-xs text-muted">Delete this goal?</span>
+                        <button type="button" disabled={disableRowActions} onClick={() => remove(goal, index)} className={`${confirmButton} text-danger-strong hover:bg-danger-soft`}>
+                          Delete
                         </button>
-                        <button id={statusId(goal.id, "missed")} type="button" disabled={disableRowActions} onClick={() => toggleStatus(goal, "missed")} aria-pressed={missed} aria-label={`Mark goal ${number} missed`} title={missed ? "Undo missed" : "Mark missed"} className={`${iconButton} ${missed ? "bg-danger-soft text-danger-strong" : "text-muted hover:bg-surface hover:text-danger-strong"}`}>
-                          <Icon name="missed" />
-                        </button>
-                        <button type="button" disabled={disableRowActions} onClick={() => remove(goal, index)} aria-label={`Delete goal ${number}`} title="Delete goal" className={`${iconButton} text-muted hover:bg-danger-soft hover:text-danger-strong`}>
-                          <Icon name="delete" />
+                        <button id={cancelDeleteId(goal.id)} type="button" disabled={disableRowActions} onClick={() => cancelDelete(goal)} className={`${confirmButton} text-muted hover:bg-surface hover:text-ink`}>
+                          Cancel
                         </button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="mt-1 flex flex-wrap items-center justify-between gap-x-2">
+                        <span className={`text-xs ${STATUS_COLOR[goal.status]}`}>{GOAL_STATUS_LABEL[goal.status]}</span>
+                        <div className="ml-auto flex items-center gap-1">
+                          <button id={statusId(goal.id, "done")} type="button" disabled={disableRowActions} onClick={() => toggleStatus(goal, "done")} aria-pressed={done} aria-label={`Mark goal ${number} done`} title={done ? "Undo done" : "Mark done"} className={`${iconButton} ${done ? "bg-live-soft text-live-strong" : "text-muted hover:bg-surface hover:text-live-strong"}`}>
+                            <Icon name="done" />
+                          </button>
+                          <button id={statusId(goal.id, "missed")} type="button" disabled={disableRowActions} onClick={() => toggleStatus(goal, "missed")} aria-pressed={missed} aria-label={`Mark goal ${number} missed`} title={missed ? "Undo missed" : "Mark missed"} className={`${iconButton} ${missed ? "bg-danger-soft text-danger-strong" : "text-muted hover:bg-surface hover:text-danger-strong"}`}>
+                            <Icon name="missed" />
+                          </button>
+                          <button id={deleteId(goal.id)} type="button" disabled={disableRowActions} onClick={() => askDelete(goal)} aria-label={`Delete goal ${number}`} title="Delete goal" className={`${iconButton} text-muted hover:bg-danger-soft hover:text-danger-strong`}>
+                            <Icon name="delete" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </li>
