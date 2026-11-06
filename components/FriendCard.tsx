@@ -46,13 +46,13 @@ function LiveStudyStatus({ since, startedAt, accumulated, serverNow }: { since: 
 
   return (
     <>
-      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
+      <p className="min-w-0 text-right text-sm leading-relaxed">
+        <StudyPhrase sessionKey={startedAt} elapsedMs={elapsed} />
+      </p>
+      <span className="col-span-2 inline-flex shrink-0 items-center justify-self-start gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
         <span className="size-1.5 rounded-full bg-live" aria-hidden />
         <span className="tabular-nums">{formatClock(elapsed)}</span>
       </span>
-      <p className="col-span-2 min-w-0 text-sm leading-relaxed">
-        <StudyPhrase sessionKey={startedAt} elapsedMs={elapsed} />
-      </p>
     </>
   );
 }
@@ -126,7 +126,7 @@ export function FriendCard({ f, me, href, serverNow }: { f: FriendCardData; me: 
 
   return (
     <div className="p-5">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
+      <div className={`grid items-center gap-x-3 gap-y-2 ${f.liveSince ? "grid-cols-2" : "grid-cols-[minmax(0,1fr)_auto]"}`}>
         <span className="flex min-w-0 items-center gap-2.5">
           <span
             className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${
