@@ -16,6 +16,13 @@
   --live: #3f7d48;
   --live-strong: #346b3c;
   --live-soft: #e6f1e3;
+  --study-rainbow-0: #b3374b;
+  --study-rainbow-1: #8c5b00;
+  --study-rainbow-2: #2a6c38;
+  --study-rainbow-3: #006c73;
+  --study-rainbow-4: #315ec5;
+  --study-rainbow-5: #7950b5;
+  --study-rainbow-6: #9b3d85;
   --warn: #8a5a12;
   --warn-soft: #fbefd9;
   --danger: #b4483a;
@@ -50,6 +57,13 @@
   --live: #a0c9a4;
   --live-strong: #b5dfb8;
   --live-soft: #223a30;
+  --study-rainbow-0: #ffa0ae;
+  --study-rainbow-1: #ffd38a;
+  --study-rainbow-2: #b5e58b;
+  --study-rainbow-3: #83ddd0;
+  --study-rainbow-4: #9fbcff;
+  --study-rainbow-5: #c5a7ff;
+  --study-rainbow-6: #f5a6dd;
   --warn: #eac48a;
   --warn-soft: #3a3025;
   --danger: #f1a69e;
@@ -126,6 +140,43 @@
 
 :root[data-theme="dark"] .night-sky {
   visibility: visible;
+}
+
+.study-phrase {
+  color: var(--live-strong);
+  font-weight: 600;
+  text-shadow: 0 0 6px color-mix(in srgb, currentColor 30%, transparent);
+}
+
+.study-phrase--rainbow {
+  text-shadow: none;
+}
+
+.study-phrase__word {
+  display: inline-block;
+}
+
+.study-phrase__letter {
+  color: var(--study-letter-color);
+  text-shadow: 0 0 7px color-mix(in srgb, currentColor 45%, transparent);
+  animation: study-rainbow 7s linear infinite;
+  animation-delay: var(--study-letter-delay);
+}
+
+@keyframes study-rainbow {
+  0%, 100% { color: var(--study-rainbow-0); }
+  14.28% { color: var(--study-rainbow-1); }
+  28.57% { color: var(--study-rainbow-2); }
+  42.86% { color: var(--study-rainbow-3); }
+  57.14% { color: var(--study-rainbow-4); }
+  71.42% { color: var(--study-rainbow-5); }
+  85.71% { color: var(--study-rainbow-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .study-phrase__letter {
+    animation: none;
+  }
 }
 
 /* In the base layer so utilities like outline-none can override these. */
