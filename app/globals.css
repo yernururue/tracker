@@ -48,8 +48,8 @@
 
 :root[data-theme="dark"] {
   --bg: #080a14;
-  --surface: #11131b;
-  --surface-2: #181b25;
+  --surface: #1b1e28;
+  --surface-2: #232733;
   --line: #07090f;
   --line-strong: #0b0d14;
   --ink: #eeeefa;
@@ -81,7 +81,7 @@
   --p2: #a0c9a4;
   --p3: #e5b07f;
   --p4: #c7a2d5;
-  --heat-0: #1b1e29;
+  --heat-0: #2a2e3a;
   color-scheme: dark;
 }
 
