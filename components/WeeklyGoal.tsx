@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { notifyStudyUpdate } from "@/lib/study-updates";
 import { GOAL_STATUS_LABEL, type GoalStatus, type WeeklyGoal as Goal } from "@/lib/types";
 import { SECTION_GOALS, useInstructions } from "./Instructions";
 import { btnGhost, btnPrimary, card, input, label } from "./ui";
@@ -12,22 +12,22 @@ const STATUS_ACTIVE: Record<GoalStatus, string> = {
   pending: "bg-surface text-ink",
   done: "bg-live-soft text-live-strong",
   partial: "bg-warn-soft text-warn",
-  missed: "bg-[#fbe3df] text-[#9b3a2e]",
+  missed: "bg-danger-soft text-danger-strong",
 };
 
 export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | null; userId: string; weekStart: string }) {
-  const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const instructions = useInstructions();
   const [goal, setGoal] = useState(initial);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(initial?.goal_text ?? "");
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(0);
 
   const [prevInitial, setPrevInitial] = useState(initial);
   if (initial !== prevInitial) {
     setPrevInitial(initial);
-    if (!editing) setGoal(initial);
+    if (!editing && pending === 0) setGoal(initial);
   }
 
   async function saveText(e: React.FormEvent) {
@@ -47,16 +47,18 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
       updated_at: now,
     });
     setEditing(false);
+    setPending((count) => count + 1);
     const { error } = await supabase
       .from("weekly_goals")
       .upsert({ user_id: userId, week_start: weekStart, goal_text: goalText }, { onConflict: "user_id,week_start" });
+    setPending((count) => count - 1);
     if (error) {
       setGoal(prev);
       setEditing(true);
       setError(`Couldn’t save: ${error.message}`);
       return;
     }
-    router.refresh();
+    notifyStudyUpdate(supabase);
   }
 
   async function setStatus(status: GoalStatus) {
@@ -64,17 +66,19 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
     setError(null);
     const prev = goal;
     setGoal({ ...goal, status });
+    setPending((count) => count + 1);
     const { error } = await supabase
       .from("weekly_goals")
       .update({ status })
       .eq("user_id", userId)
       .eq("week_start", weekStart);
+    setPending((count) => count - 1);
     if (error) {
       setGoal(prev);
       setError(`Couldn’t save: ${error.message}`);
       return;
     }
-    router.refresh();
+    notifyStudyUpdate(supabase);
   }
 
   const showForm = !goal || editing;
@@ -123,7 +127,14 @@ export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | 
               Save
             </button>
             {editing && (
-              <button type="button" onClick={() => setEditing(false)} className={btnGhost}>
+              <button
+                type="button"
+                onClick={() => {
+                  setGoal(initial);
+                  setEditing(false);
+                }}
+                className={btnGhost}
+              >
                 Cancel
               </button>
             )}

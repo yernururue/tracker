@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { InstructionsButton } from "./Instructions";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Page = "home" | "reports" | "profile";
 
@@ -20,12 +21,12 @@ export function Header({
   withInstructions?: boolean;
 }) {
   return (
-    <header className="mb-6 flex items-center justify-between gap-2 sm:mb-8">
+    <header className="mb-6 grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-3 min-[480px]:grid-cols-[1fr_auto_auto] sm:mb-8">
       <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
         <Logo />
         Study
       </Link>
-      <nav className="-mr-1 flex items-center gap-0.5">
+      <nav className="col-span-2 row-start-2 flex items-center justify-end gap-0.5 min-[480px]:col-span-1 min-[480px]:col-start-2 min-[480px]:row-start-1">
         {withInstructions && <InstructionsButton />}
         <Link href="/reports" className={link(current === "reports")} aria-current={current === "reports" ? "page" : undefined}>
           Reports
@@ -38,6 +39,9 @@ export function Header({
           {name}
         </Link>
       </nav>
+      <div className="col-start-2 row-start-1 min-[480px]:col-start-3">
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
