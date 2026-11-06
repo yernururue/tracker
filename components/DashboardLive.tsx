@@ -85,7 +85,7 @@ export function DashboardLive({ initial, userId }: { initial: DashboardSnapshot;
           <Timer initialTimer={snapshot.timer} serverNow={snapshot.serverNow} />
           <WeeklyGoal goal={snapshot.goal} userId={userId} weekStart={snapshot.weekStart} />
         </div>
-        <FriendsPanel friends={snapshot.friends} meId={userId} />
+        <FriendsPanel friends={snapshot.friends} meId={userId} serverNow={snapshot.serverNow} />
       </div>
     </>
   );

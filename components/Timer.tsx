@@ -9,6 +9,7 @@ import type { ActiveTimer, TimerRpcResult } from "@/lib/types";
 import { SECTION_REPORT, useInstructions } from "./Instructions";
 import { Modal } from "./Modal";
 import { RollingText } from "./Progress";
+import { StudyPhrase } from "./StudyPhrase";
 import { btnGhost, btnPrimary, btnSecondary, card, input, label } from "./ui";
 
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
@@ -241,6 +242,12 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       >
         <RollingText text={formatClock(elapsed)} />
       </p>
+
+      {running && timer && (
+        <p className="mt-4 min-h-5 text-center text-sm leading-relaxed">
+          {timer.user_id && <StudyPhrase sessionKey={timer.started_at} elapsedMs={elapsed} />}
+        </p>
+      )}
 
       <div className="mt-7 flex gap-3">
         {state === "idle" && (

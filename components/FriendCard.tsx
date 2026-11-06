@@ -6,6 +6,7 @@ import { DAY_TARGET_MIN, WEEK_TARGET_MIN } from "@/lib/stats";
 import { formatClock, formatHours, formatMinutes, formatShortDate } from "@/lib/time";
 import { GOAL_STATUS_LABEL, type GoalStatus } from "@/lib/types";
 import { Ring } from "./Progress";
+import { StudyPhrase } from "./StudyPhrase";
 
 export type FriendCardData = {
   id: string;
@@ -14,6 +15,7 @@ export type FriendCardData = {
   weekMin: number;
   /** ISO time the friend's timer has been running since, null if not running */
   liveSince: string | null;
+  liveStartedAt: string | null;
   liveAccumulatedMs: number;
   last: { startedAt: string; minutes: number; report: string } | null;
   goal: { text: string; status: GoalStatus } | null;
@@ -33,13 +35,26 @@ const STATUS_TEXT: Record<GoalStatus, string> = {
   missed: "text-danger",
 };
 
-function LiveClock({ since, accumulated }: { since: string; accumulated: number }) {
-  const [now, setNow] = useState(() => Date.now());
+function LiveStudyStatus({ since, startedAt, accumulated, serverNow }: { since: string; startedAt: string; accumulated: number; serverNow: string }) {
+  const [now, setNow] = useState(() => Date.parse(serverNow));
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const offset = Date.parse(serverNow) - Date.now();
+    const id = setInterval(() => setNow(Date.now() + offset), 1000);
     return () => clearInterval(id);
-  }, []);
-  return <span className="tabular-nums">{formatClock(accumulated + Math.max(0, now - Date.parse(since)))}</span>;
+  }, [serverNow]);
+  const elapsed = accumulated + Math.max(0, now - Date.parse(since));
+
+  return (
+    <>
+      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
+        <span className="size-1.5 rounded-full bg-live" aria-hidden />
+        <span className="tabular-nums">{formatClock(elapsed)}</span>
+      </span>
+      <p className="col-span-2 min-w-0 text-sm leading-relaxed">
+        <StudyPhrase sessionKey={startedAt} elapsedMs={elapsed} />
+      </p>
+    </>
+  );
 }
 
 function Meter({ label, minutes, target, value }: { label: string; minutes: number; target: number; value: string }) {
@@ -98,7 +113,7 @@ function Toggle({
   );
 }
 
-export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; href?: string }) {
+export function FriendCard({ f, me, href, serverNow }: { f: FriendCardData; me: boolean; href?: string; serverNow: string }) {
   const [open, setOpen] = useState<"goal" | "report" | null>(null);
   // Keeps the last panel's content while it collapses.
   const [shown, setShown] = useState<"goal" | "report">("goal");
@@ -111,7 +126,7 @@ export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; hr
 
   return (
     <div className="p-5">
-      <div className="flex items-center justify-between gap-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2">
         <span className="flex min-w-0 items-center gap-2.5">
           <span
             className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ${
@@ -131,10 +146,7 @@ export function FriendCard({ f, me, href }: { f: FriendCardData; me: boolean; hr
           {me && <span className="shrink-0 text-xs text-muted">you</span>}
         </span>
         {f.liveSince ? (
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-live-soft px-2.5 py-1 text-xs font-medium text-live-strong">
-            <span className="size-1.5 rounded-full bg-live" aria-hidden />
-            <LiveClock since={f.liveSince} accumulated={f.liveAccumulatedMs} />
-          </span>
+          <LiveStudyStatus since={f.liveSince} startedAt={f.liveStartedAt ?? f.liveSince} accumulated={f.liveAccumulatedMs} serverNow={serverNow} />
         ) : (
           <span className="shrink-0 text-xs text-muted">not studying</span>
         )}
