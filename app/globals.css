@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Light cream page, white components, dark navy accent. Light only on purpose: no dark variant. */
+/* Semantic colors keep every screen in step with the selected theme. */
 :root {
   --bg: #fdf4e3;
   --surface: #ffffff;
@@ -19,6 +19,9 @@
   --warn: #8a5a12;
   --warn-soft: #fbefd9;
   --danger: #b4483a;
+  --danger-strong: #9b3a2e;
+  --danger-soft: #fbe3df;
+  --backdrop: rgb(43 34 25 / 0.35);
   --p1: var(--accent);
   --p2: #5f8a66;
   --p3: #c0703f;
@@ -30,6 +33,34 @@
   --heat-4: var(--accent);
   color-scheme: light;
   interpolate-size: allow-keywords;
+}
+
+:root[data-theme="dark"] {
+  --bg: #080a14;
+  --surface: #171b2b;
+  --surface-2: #202538;
+  --line: #30364c;
+  --line-strong: #505970;
+  --ink: #eeeefa;
+  --muted: #b0b4cb;
+  --accent: #b6b9ed;
+  --accent-hover: #d0d2ff;
+  --accent-ink: #17192c;
+  --accent-soft: #2d3150;
+  --live: #a0c9a4;
+  --live-strong: #b5dfb8;
+  --live-soft: #223a30;
+  --warn: #eac48a;
+  --warn-soft: #3a3025;
+  --danger: #f1a69e;
+  --danger-strong: #ffc0b7;
+  --danger-soft: #442c33;
+  --backdrop: rgb(3 4 12 / 0.75);
+  --p2: #a0c9a4;
+  --p3: #e5b07f;
+  --p4: #c7a2d5;
+  --heat-0: #24293d;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -50,6 +81,9 @@
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-danger: var(--danger);
+  --color-danger-strong: var(--danger-strong);
+  --color-danger-soft: var(--danger-soft);
+  --color-backdrop: var(--backdrop);
   --font-sans: var(--font-onest);
 }
 
@@ -65,6 +99,18 @@
       opacity: 0;
     }
   }
+}
+
+.theme-sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme-moon {
+  display: none;
 }
 
 /* In the base layer so utilities like outline-none can override these. */

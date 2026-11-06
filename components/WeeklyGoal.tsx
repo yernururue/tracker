@@ -12,7 +12,7 @@ const STATUS_ACTIVE: Record<GoalStatus, string> = {
   pending: "bg-surface text-ink",
   done: "bg-live-soft text-live-strong",
   partial: "bg-warn-soft text-warn",
-  missed: "bg-[#fbe3df] text-[#9b3a2e]",
+  missed: "bg-danger-soft text-danger-strong",
 };
 
 export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | null; userId: string; weekStart: string }) {
