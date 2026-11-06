@@ -52,6 +52,7 @@ export async function loadDashboard(supabase: SupabaseClient, userId: string): P
       weekMin: week.reduce((total, session) => total + session.minutes, 0),
       todayMin: week.filter((session) => session.started_at >= todayStart).reduce((total, session) => total + session.minutes, 0),
       liveSince: timer?.running_since ?? null,
+      liveStartedAt: timer?.started_at ?? null,
       liveAccumulatedMs: Number(timer?.accumulated_ms ?? 0),
       last: last ? { startedAt: last.started_at, minutes: last.minutes, report: last.report } : null,
       goal: goal ? { text: goal.goal_text, status: goal.status } : null,
