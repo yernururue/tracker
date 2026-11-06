@@ -1,12 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Onest } from "next/font/google";
+import localFont from "next/font/local";
 import { NightSky } from "@/components/NightSky";
 import { THEME_COLORS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-const onest = Onest({
-  variable: "--font-onest",
-  subsets: ["latin", "cyrillic"],
+const minecraftFont = localFont({
+  src: [
+    { path: "./fonts/Monocraft-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/Monocraft-SemiBold.ttf", weight: "600", style: "normal" },
+  ],
+  variable: "--font-minecraft",
+  display: "swap",
+  fallback: ["monospace"],
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -23,7 +29,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${onest.variable} antialiased`} data-theme="light" suppressHydrationWarning>
+    <html lang="en" className={minecraftFont.variable} data-theme="light" suppressHydrationWarning>
       <head>
         <script
           type={typeof window === "undefined" ? "text/javascript" : "text/plain"}

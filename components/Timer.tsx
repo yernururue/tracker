@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { notifyStudyUpdate } from "@/lib/study-updates";
 import { formatClock } from "@/lib/time";
 import type { ActiveTimer, TimerRpcResult } from "@/lib/types";
 import { SECTION_REPORT, useInstructions } from "./Instructions";
@@ -123,6 +124,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       setOffset(Date.parse(res.now) - Date.now());
       // Once the queue is drained, adopt the database state (e.g. a timer started elsewhere).
       if (inFlight.current === 0) setTimer((cur) => (cur === null && fn !== "discard_timer" ? cur : res.timer));
+      notifyStudyUpdate(supabase);
     });
   }
 
@@ -208,7 +210,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
         return;
       }
       setReport("");
-      router.refresh();
+      notifyStudyUpdate(supabase);
     });
   }
 
@@ -233,7 +235,7 @@ export function Timer({ initialTimer, serverNow }: { initialTimer: ActiveTimer |
       </div>
 
       <p
-        className={`mt-7 text-center text-6xl font-semibold leading-none tabular-nums tracking-tight sm:text-7xl ${
+        className={`mt-7 text-center text-[2.75rem] font-semibold leading-none tabular-nums tracking-tight sm:text-5xl lg:text-6xl ${
           state === "idle" ? "text-ink/25" : ""
         }`}
       >
