@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { paintDayClouds } from "@/lib/day-clouds";
 
 type Star = {
   x: number;
@@ -96,6 +97,7 @@ export function PixelSky() {
       }
 
       backgroundContext!.putImageData(pixels, 0, 0);
+      if (!dark) paintDayClouds(backgroundContext!, background.width, background.height);
     }
 
     function draw(now: number) {
@@ -152,7 +154,7 @@ export function PixelSky() {
       }
       lastFrame = performance.now();
       draw(lastFrame);
-      // Daylight is static; only the night stars need an animation loop.
+      // The daytime sky is cached; only the night stars need an animation loop.
       if (dark && !motionPreference.matches) {
         frameId = window.requestAnimationFrame(animate);
       }
