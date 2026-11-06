@@ -54,6 +54,7 @@ npm run dev
 4. **Deploy**.
 5. Возьми домен проекта и пропиши его в Supabase (Site URL и Redirect URLs, шаг 1.4).
 6. Если позже поменяешь `ALLOWED_EMAILS`, сделай Redeploy, чтобы переменная применилась.
+7. На плане Hobby с приватным репозиторием Vercel блокирует деплой (статус Blocked), если автор коммита не имеет доступа к проекту. Такие изменения попадут в продакшен со следующим коммитом владельца проекта.
 
 ## Как это устроено
 
@@ -73,7 +74,7 @@ npm run dev
 ```
 supabase/schema.sql      таблицы, RLS, функции таймера, view user_totals
 proxy.ts                 обновление сессии, allowlist, редиректы (бывший middleware)
-app/login                вход по magic link
+app/login                вход по email и паролю, ссылка для сброса пароля
 app/auth/confirm         подтверждение ссылки
 app/onboarding           ввод имени при первом входе
 app/page.tsx             главный экран: таймер + друзья
