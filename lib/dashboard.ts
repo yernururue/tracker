@@ -6,7 +6,7 @@ import type { ActiveTimer, Profile, Session, WeeklyGoal } from "./types";
 export type DashboardSnapshot = {
   friends: FriendCardData[];
   timer: ActiveTimer | null;
-  goal: WeeklyGoal | null;
+  goals: WeeklyGoal[];
   weekStart: string;
   serverNow: string;
   error: string | null;
@@ -35,7 +35,13 @@ export async function loadDashboard(supabase: SupabaseClient, userId: string): P
       .order("created_at", { ascending: false })
       .limit(50)
       .returns<Pick<Session, "user_id" | "started_at" | "minutes" | "report">[]>(),
-    supabase.from("weekly_goals").select("*").eq("week_start", weekKey).returns<WeeklyGoal[]>(),
+    supabase
+      .from("weekly_goals")
+      .select("*")
+      .eq("week_start", weekKey)
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .returns<WeeklyGoal[]>(),
   ]);
 
   const timers = timersRes.data ?? [];
@@ -44,7 +50,7 @@ export async function loadDashboard(supabase: SupabaseClient, userId: string): P
     const week = (weekRes.data ?? []).filter((session) => session.user_id === profile.id);
     const timer = timers.find((entry) => entry.user_id === profile.id);
     const last = (recentRes.data ?? []).find((session) => session.user_id === profile.id);
-    const goal = goals.find((entry) => entry.user_id === profile.id);
+    const personGoals = goals.filter((entry) => entry.user_id === profile.id);
 
     return {
       id: profile.id,
@@ -55,7 +61,7 @@ export async function loadDashboard(supabase: SupabaseClient, userId: string): P
       liveStartedAt: timer?.started_at ?? null,
       liveAccumulatedMs: Number(timer?.accumulated_ms ?? 0),
       last: last ? { startedAt: last.started_at, minutes: last.minutes, report: last.report } : null,
-      goal: goal ? { text: goal.goal_text, status: goal.status } : null,
+      goals: personGoals.map((goal) => ({ id: goal.id, text: goal.goal_text, status: goal.status })),
     };
   });
 
@@ -71,7 +77,7 @@ export async function loadDashboard(supabase: SupabaseClient, userId: string): P
   return {
     friends,
     timer: timers.find((timer) => timer.user_id === userId) ?? null,
-    goal: goals.find((goal) => goal.user_id === userId) ?? null,
+    goals: goals.filter((goal) => goal.user_id === userId),
     weekStart: weekKey,
     serverNow: now.toISOString(),
     error: loadError?.message ?? null,

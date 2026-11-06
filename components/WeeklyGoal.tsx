@@ -1,172 +1,51 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useMemo } from "react";
 import { notifyStudyUpdate } from "@/lib/study-updates";
-import { GOAL_STATUS_LABEL, type GoalStatus, type WeeklyGoal as Goal } from "@/lib/types";
-import { SECTION_GOALS, useInstructions } from "./Instructions";
-import { btnGhost, btnPrimary, card, input, label } from "./ui";
+import { createClient } from "@/lib/supabase/client";
+import type { WeeklyGoal as Goal } from "@/lib/types";
+import { WeeklyGoalEditor, type GoalPatch } from "./WeeklyGoalEditor";
 
-const STATUSES: GoalStatus[] = ["pending", "done", "partial", "missed"];
-const STATUS_ACTIVE: Record<GoalStatus, string> = {
-  pending: "bg-surface text-ink",
-  done: "bg-live-soft text-live-strong",
-  partial: "bg-warn-soft text-warn",
-  missed: "bg-danger-soft text-danger-strong",
-};
-
-export function WeeklyGoal({ goal: initial, userId, weekStart }: { goal: Goal | null; userId: string; weekStart: string }) {
+export function WeeklyGoal({ goals, userId, weekStart }: { goals: Goal[]; userId: string; weekStart: string }) {
   const supabase = useMemo(() => createClient(), []);
-  const instructions = useInstructions();
-  const [goal, setGoal] = useState(initial);
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(initial?.goal_text ?? "");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(0);
 
-  const [prevInitial, setPrevInitial] = useState(initial);
-  if (initial !== prevInitial) {
-    setPrevInitial(initial);
-    if (!editing && pending === 0) setGoal(initial);
-  }
-
-  async function saveText(e: React.FormEvent) {
-    e.preventDefault();
-    const goalText = text.trim();
-    if (!goalText) return;
-    setError(null);
-    const prev = goal;
-    const now = new Date().toISOString();
-    setGoal({
-      id: goal?.id ?? "local",
-      user_id: userId,
-      week_start: weekStart,
-      goal_text: goalText,
-      status: goal?.status ?? "pending",
-      created_at: goal?.created_at ?? now,
-      updated_at: now,
-    });
-    setEditing(false);
-    setPending((count) => count + 1);
-    const { error } = await supabase
+  async function createGoal(text: string) {
+    const { data, error } = await supabase
       .from("weekly_goals")
-      .upsert({ user_id: userId, week_start: weekStart, goal_text: goalText }, { onConflict: "user_id,week_start" });
-    setPending((count) => count - 1);
-    if (error) {
-      setGoal(prev);
-      setEditing(true);
-      setError(`Couldn’t save: ${error.message}`);
-      return;
-    }
+      .insert({ user_id: userId, week_start: weekStart, goal_text: text })
+      .select("*")
+      .single<Goal>();
+    if (error) throw error;
     notifyStudyUpdate(supabase);
+    return data;
   }
 
-  async function setStatus(status: GoalStatus) {
-    if (!goal || goal.status === status) return;
-    setError(null);
-    const prev = goal;
-    setGoal({ ...goal, status });
-    setPending((count) => count + 1);
-    const { error } = await supabase
+  async function updateGoal(id: string, patch: GoalPatch) {
+    const { data, error } = await supabase
       .from("weekly_goals")
-      .update({ status })
+      .update(patch)
+      .eq("id", id)
       .eq("user_id", userId)
-      .eq("week_start", weekStart);
-    setPending((count) => count - 1);
-    if (error) {
-      setGoal(prev);
-      setError(`Couldn’t save: ${error.message}`);
-      return;
-    }
+      .eq("week_start", weekStart)
+      .select("*")
+      .single<Goal>();
+    if (error) throw error;
+    notifyStudyUpdate(supabase);
+    return data;
+  }
+
+  async function deleteGoal(id: string) {
+    const { error } = await supabase
+      .from("weekly_goals")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId)
+      .eq("week_start", weekStart)
+      .select("id")
+      .single();
+    if (error) throw error;
     notifyStudyUpdate(supabase);
   }
 
-  const showForm = !goal || editing;
-
-  return (
-    <section className={card}>
-      <div className="flex items-center justify-between gap-3">
-        <span className={label}>Weekly goal</span>
-        {goal && !editing && (
-          <button
-            onClick={() => {
-              setText(goal.goal_text);
-              setEditing(true);
-            }}
-            className={`${btnGhost} -my-2 -mr-3`}
-          >
-            Edit
-          </button>
-        )}
-      </div>
-
-      {showForm ? (
-        <form onSubmit={saveText} className="mt-4 flex flex-col gap-3">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            maxLength={500}
-            rows={2}
-            required
-            placeholder="By Sunday I will…"
-            aria-label="Weekly goal"
-            className={`${input} resize-none leading-relaxed`}
-          />
-          <p className="text-sm text-muted">
-            A goal you can prove with an artifact: code, solved problems, a link.{" "}
-            <button
-              type="button"
-              onClick={() => instructions.open(SECTION_GOALS)}
-              className="underline decoration-line underline-offset-4 hover:text-ink"
-            >
-              How to set a good goal
-            </button>
-          </p>
-          <div className="flex gap-2">
-            <button type="submit" disabled={!text.trim()} className={`${btnPrimary} h-10 px-5 text-sm`}>
-              Save
-            </button>
-            {editing && (
-              <button
-                type="button"
-                onClick={() => {
-                  setGoal(initial);
-                  setEditing(false);
-                }}
-                className={btnGhost}
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      ) : (
-        goal && (
-          <>
-            <p className="mt-3 whitespace-pre-wrap break-words leading-relaxed">{goal.goal_text}</p>
-            <div
-              className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1 ring-1 ring-inset ring-line"
-              role="radiogroup"
-              aria-label="Goal status"
-            >
-              {STATUSES.map((s) => (
-                <button
-                  key={s}
-                  role="radio"
-                  aria-checked={goal.status === s}
-                  onClick={() => setStatus(s)}
-                  className={`rounded-lg px-2 py-2 text-sm transition-colors ${
-                    goal.status === s ? `font-medium shadow-card ${STATUS_ACTIVE[s]}` : "text-muted hover:bg-surface/70 hover:text-ink"
-                  }`}
-                >
-                  {GOAL_STATUS_LABEL[s]}
-                </button>
-              ))}
-            </div>
-          </>
-        )
-      )}
-      {error && <p className="mt-3 text-sm text-danger">{error}</p>}
-    </section>
-  );
+  return <WeeklyGoalEditor goals={goals} onCreate={createGoal} onUpdate={updateGoal} onDelete={deleteGoal} />;
 }

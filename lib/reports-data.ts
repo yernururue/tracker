@@ -23,7 +23,11 @@ export async function loadReportDoc(
     .select("id, user_id, started_at, ended_at, minutes, report")
     .order("started_at", { ascending: false })
     .limit(10000);
-  let gq = supabase.from("weekly_goals").select("*");
+  let gq = supabase
+    .from("weekly_goals")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
   if (fromKey) {
     sq = sq.gte("started_at", dayStartUtc(fromKey));
     gq = gq.gte("week_start", weekStartKey(fromKey));
